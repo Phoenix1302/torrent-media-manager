@@ -225,16 +225,40 @@ def get_tmdb_query(raw_name: str, manual_query: str = "") -> str:
 
 
 def normalize_media_type(media_type: str) -> str:
+    if not media_type:
+        return "movie"
+    cleaned = str(media_type).strip().lower()
     category_to_type = {
         "films": "movie",
+        "film": "movie",
+        "movie": "movie",
+        "movies": "movie",
+        "кино": "movie",
+        "фильм": "movie",
+        "фильмы": "movie",
+
         "serials": "tv",
+        "serial": "tv",
+        "tv": "tv",
+        "series": "tv",
+        "шоу": "tv",
+        "сериал": "tv",
+        "сериалы": "tv",
+
         "anime": "anime",
+        "аниме": "anime",
+
         "mults": "cartoon",
+        "mult": "cartoon",
+        "cartoon": "cartoon",
+        "cartoons": "cartoon",
+        "animation": "cartoon",
+        "мультфильм": "cartoon",
+        "мультфильмы": "cartoon",
+        "мультики": "cartoon",
+        "мульт": "cartoon",
     }
-    if media_type in category_to_type:
-        return category_to_type[media_type]
-    allowed = {"movie", "tv", "anime", "cartoon"}
-    return media_type if media_type in allowed else "movie"
+    return category_to_type.get(cleaned, "movie")
 
 
 def build_job_metadata(job: dict):
@@ -888,7 +912,15 @@ def create_job_for_existing_torrent(
     season_pack: bool = Form(False),
     start_episode: int = Form(1),
 ):
-    media_type = normalize_media_type(media_type)
+    if not media_type or media_type == "movie":
+        torrent = get_torrent_by_hash(torrent_hash)
+        if torrent and torrent.get("category"):
+            media_type = normalize_media_type(torrent.get("category"))
+        else:
+            media_type = normalize_media_type(media_type)
+    else:
+        media_type = normalize_media_type(media_type)
+
     final_title = plex_title.strip() or title.strip()
 
     upsert_job(

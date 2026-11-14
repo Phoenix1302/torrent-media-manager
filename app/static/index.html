@@ -2577,6 +2577,98 @@
             if (cancelBtn) cancelBtn.focus();
           });
         });
+      },
+
+      createJob({ cleanTitle = "", qbitCategory = "", detectedCategory = "movie", hash = "" } = {}) {
+        return new Promise((resolve) => {
+          const old = document.getElementById("activeModalBackdrop");
+          if (old) old.remove();
+
+          const backdrop = document.createElement("div");
+          backdrop.id = "activeModalBackdrop";
+          backdrop.className = "modal-backdrop";
+
+          const initialCategory = qbitCategory || detectedCategory || "movie";
+
+          backdrop.innerHTML = `
+            <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modalCreateJobTitle">
+              <div class="modal-header">
+                <h3 class="modal-title" id="modalCreateJobTitle">
+                  <span>🚀</span>
+                  <span>Создать задачу автоимпорта</span>
+                </h3>
+                <button class="modal-close" type="button" aria-label="Закрыть" data-action="cancel">&times;</button>
+              </div>
+              <div class="modal-body" style="display: flex; flex-direction: column; gap: 14px;">
+                <div>
+                  <label style="font-size: 12px; color: var(--muted); display: block; margin-bottom: 6px;">Название релиза</label>
+                  <input type="text" id="modalJobTitleInput" class="input" style="width: 100%;" value="${escapeHtml(cleanTitle)}">
+                </div>
+                <div>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <label style="font-size: 12px; color: var(--muted); margin-bottom: 0;">Категория медиатеки</label>
+                    ${qbitCategory ? `<span style="font-size: 11px; color: #a78bfa; background: rgba(139, 92, 246, 0.15); padding: 2px 8px; border-radius: 999px;">Из qBit: ${escapeHtml(qbitCategory)}</span>` : ""}
+                  </div>
+                  <select id="modalJobMediaTypeSelect" class="input" style="width: 100%;">
+                    <option value="anime" ${initialCategory === "anime" ? "selected" : ""}>⛩️ Аниме (anime)</option>
+                    <option value="movie" ${initialCategory === "movie" ? "selected" : ""}>🎬 Фильм (movie)</option>
+                    <option value="tv" ${initialCategory === "tv" ? "selected" : ""}>📺 Сериал (tv)</option>
+                    <option value="cartoon" ${initialCategory === "cartoon" ? "selected" : ""}>🎨 Мультфильм (cartoon)</option>
+                  </select>
+                </div>
+                <div style="font-size: 11px; color: var(--muted); line-height: 1.4;">
+                  Хэш торрента: <code>${(hash || "").slice(0, 8)}</code>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button class="btn btn-ghost" type="button" data-action="cancel">Отмена</button>
+                <button class="btn btn-primary" type="button" data-action="confirm">🚀 Запустить импорт</button>
+              </div>
+            </div>
+          `;
+
+          function finish(res) {
+            document.removeEventListener("keydown", onKey);
+            backdrop.classList.remove("show");
+            setTimeout(() => {
+              backdrop.remove();
+              resolve(res);
+            }, 200);
+          }
+
+          function onKey(e) {
+            if (e.key === "Escape") {
+              e.preventDefault();
+              finish(null);
+            }
+          }
+
+          backdrop.addEventListener("click", (e) => {
+            const btn = e.target.closest("[data-action]");
+            if (btn) {
+              const act = btn.getAttribute("data-action");
+              if (act === "confirm") {
+                const titleVal = (document.getElementById("modalJobTitleInput")?.value || "").trim() || cleanTitle;
+                const typeVal = document.getElementById("modalJobMediaTypeSelect")?.value || initialCategory;
+                finish({ title: titleVal, mediaType: typeVal });
+              } else {
+                finish(null);
+              }
+              return;
+            }
+            if (e.target === backdrop) {
+              finish(null);
+            }
+          });
+
+          document.addEventListener("keydown", onKey);
+          document.body.appendChild(backdrop);
+          requestAnimationFrame(() => {
+            backdrop.classList.add("show");
+            const inp = backdrop.querySelector("#modalJobTitleInput");
+            if (inp) inp.focus();
+          });
+        });
       }
     };
     window.Modal = Modal;
@@ -3776,6 +3868,7 @@
             <div class="torrent-title">${escapeHtml(t.name)}</div>
             <div class="torrent-meta">
               <span class="badge badge-purple">${escapeHtml(t.state || "unknown")}</span>
+              ${t.category ? `<span class="badge badge-info">🏷️ ${escapeHtml(t.category)}</span>` : ""}
               <span>${progress.toFixed(1)}%</span>
               <span>${formatBytes(t.size)}</span>
               ${speed ? `<span style="color: #6ee7b7;">${speed}</span>` : ""}
@@ -3802,6 +3895,35 @@
       renderTorrents();
     }
 
+    function mapQbitCategoryToMediaType(cat) {
+      if (!cat) return null;
+      const lower = String(cat).trim().toLowerCase();
+      const map = {
+        anime: "anime",
+        аниме: "anime",
+        serials: "tv",
+        serial: "tv",
+        series: "tv",
+        tv: "tv",
+        сериалы: "tv",
+        сериал: "tv",
+        films: "movie",
+        film: "movie",
+        movie: "movie",
+        movies: "movie",
+        кино: "movie",
+        фильмы: "movie",
+        фильм: "movie",
+        mults: "cartoon",
+        mult: "cartoon",
+        cartoons: "cartoon",
+        cartoon: "cartoon",
+        мультфильмы: "cartoon",
+        мультфильм: "cartoon"
+      };
+      return map[lower] || null;
+    }
+
     async function handleCreateJobFromTorrent() {
       const hash = State.selectedTorrentHash;
       if (!hash) return;
@@ -3809,32 +3931,36 @@
       if (!torrent) return;
 
       const rawName = torrent.name || "";
+      const qbitRawCategory = torrent.category || "";
+      const qbitMappedType = mapQbitCategoryToMediaType(qbitRawCategory);
+
       let cleanTitle = rawName;
-      let mediaType = "movie";
-      let year = "";
+      let detectedType = "movie";
 
       try {
         const cleanRes = await apiRequest(`/api/clean-title?title=${encodeURIComponent(rawName)}`, {}, true);
         if (cleanRes.status === "ok") {
           cleanTitle = cleanRes.cleaned_title || cleanTitle;
-          mediaType = cleanRes.recommended_media_type || mediaType;
+          detectedType = cleanRes.recommended_media_type || "movie";
         }
       } catch (_) {}
 
-      const confirmed = await Modal.confirm({
-        title: "Создать задачу автоимпорта",
-        message: `Создать задачу импорта для раздачи «${cleanTitle}»?\n\nКатегория: ${mediaType}`,
-        confirmText: "Создать задачу",
-        cancelText: "Отмена"
+      // Interactive modal with category selector pre-selected from qBittorrent category!
+      const userChoice = await Modal.createJob({
+        cleanTitle: cleanTitle,
+        qbitCategory: qbitMappedType || qbitRawCategory,
+        detectedCategory: detectedType,
+        hash: hash
       });
-      if (!confirmed) return;
+
+      if (!userChoice) return;
 
       const fd = new FormData();
       fd.append("torrent_hash", hash);
-      fd.append("media_type", mediaType);
-      fd.append("title", cleanTitle);
-      fd.append("plex_title", cleanTitle);
-      fd.append("year", year);
+      fd.append("media_type", userChoice.mediaType);
+      fd.append("title", userChoice.title || cleanTitle);
+      fd.append("plex_title", userChoice.title || cleanTitle);
+      fd.append("year", "");
       fd.append("season", 1);
       fd.append("episode", 1);
       fd.append("start_episode", 1);
@@ -3843,7 +3969,7 @@
 
       const res = await apiRequest("/api/jobs", { method: "POST", body: fd });
       if (res.status === "ok") {
-        Toast.success(`Задача импорта создана: ${cleanTitle}`);
+        Toast.success(`Задача импорта создана: ${userChoice.title} (${userChoice.mediaType})`);
         fetchJobs();
         switchTab("tab-jobs");
       }
