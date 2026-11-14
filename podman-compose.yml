@@ -1,0 +1,20 @@
+version: "3.8"
+
+services:
+  torrent-media-manager-test:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: localhost/torrent-media-manager_torrent-media-manager:v1.1.0
+    container_name: torrent-media-manager-test
+    restart: "no"
+    network_mode: host
+    user: "1000:1000"
+
+    env_file:
+      - .env
+
+    volumes:
+      - /mnt/dlc_data/torrents:/mnt/dlc_data/torrents
+      - /mnt/main_data/Media:/mnt/main_data/Media
+      - /opt/torrent-media-manager-test/data:/app/data

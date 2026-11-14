@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+qbittorrent-api
+httpx
+guessit
+python-multipart
+jinja2
+apscheduler
+pytest
+pytest-asyncio

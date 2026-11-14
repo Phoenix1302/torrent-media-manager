@@ -1,0 +1,3264 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Torrent Media Manager v1.1.0</title>
+  <link rel="icon" type="image/png" href="/static/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --bg-alt: #0e1424;
+      --surface: rgba(17, 24, 39, 0.85);
+      --surface-card: rgba(17, 24, 39, 0.65);
+      --surface-hover: rgba(31, 41, 55, 0.8);
+      --surface-active: rgba(45, 55, 72, 0.85);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-light: rgba(255, 255, 255, 0.14);
+      --border-focus: #8b5cf6;
+      --border-accent: rgba(139, 92, 246, 0.45);
+      
+      --text: #f3f4f6;
+      --text-bright: #ffffff;
+      --muted: #9ca3af;
+      --muted-dark: #6b7280;
+      
+      --accent: #8b5cf6;
+      --accent-hover: #7c3aed;
+      --accent-gradient: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+      --accent-glow: rgba(139, 92, 246, 0.35);
+
+      --success: #10b981;
+      --success-hover: #059669;
+      --success-glow: rgba(16, 185, 129, 0.3);
+      
+      --danger: #ef4444;
+      --danger-hover: #dc2626;
+      
+      --warning: #f59e0b;
+      --warning-hover: #d97706;
+
+      --info: #06b6d4;
+      --indigo: #6366f1;
+
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --radius-xl: 18px;
+
+      --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.25);
+      --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
+      --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.5);
+      --shadow-glow: 0 0 20px var(--accent-glow);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: radial-gradient(circle at 15% 10%, #17153a 0%, #0b0f19 55%, #070a12 100%);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      min-height: 100vh;
+      line-height: 1.5;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(11, 15, 25, 0.7);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.16);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(139, 92, 246, 0.5);
+    }
+
+    /* SVG Icons Common */
+    .icon {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+      display: inline-block;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+
+    /* ==========================================================================
+       HEADER & NAVIGATION
+       ========================================================================== */
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(11, 15, 25, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .header-inner {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    /* Brand */
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text-bright);
+      cursor: pointer;
+    }
+
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-md);
+      background: var(--accent-gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 16px var(--accent-glow);
+    }
+
+    .brand-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-title {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-tag {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .version-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 99px;
+      background: rgba(139, 92, 246, 0.2);
+      border: 1px solid rgba(139, 92, 246, 0.4);
+      color: #c4b5fd;
+      letter-spacing: 0.02em;
+    }
+
+    /* Nav Tabs */
+    .header-nav {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 4px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+    }
+
+    .nav-tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: var(--radius-md);
+      background: transparent;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      white-space: nowrap;
+      text-decoration: none;
+    }
+
+    .nav-tab-btn:hover {
+      background: var(--surface-hover);
+      color: var(--text-bright);
+    }
+
+    .nav-tab-btn.active {
+      background: var(--accent-gradient);
+      color: #ffffff;
+      box-shadow: 0 2px 12px var(--accent-glow);
+    }
+
+    .nav-tab-badge {
+      padding: 1px 6px;
+      border-radius: 99px;
+      font-size: 10px;
+      font-weight: 800;
+      background: rgba(255, 255, 255, 0.18);
+      color: #ffffff;
+    }
+
+    .nav-tab-btn.active .nav-tab-badge {
+      background: rgba(0, 0, 0, 0.35);
+    }
+
+    /* Header Right Widgets */
+    .header-widgets {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    /* Live Realtime SSE Dot */
+    .realtime-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      border-radius: 99px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      color: #6ee7b7;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      transition: all 0.3s ease;
+    }
+
+    .realtime-pill.disconnected {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+    }
+
+    .realtime-pill.reconnecting {
+      background: rgba(245, 158, 11, 0.1);
+      border-color: rgba(245, 158, 11, 0.3);
+      color: #fcd34d;
+    }
+
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 10px #10b981;
+      animation: pulseAnim 2s infinite ease-in-out;
+    }
+
+    .realtime-pill.disconnected .pulse-dot {
+      background: #ef4444;
+      box-shadow: 0 0 10px #ef4444;
+      animation: none;
+    }
+
+    .realtime-pill.reconnecting .pulse-dot {
+      background: #f59e0b;
+      box-shadow: 0 0 10px #f59e0b;
+    }
+
+    @keyframes pulseAnim {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.3); }
+    }
+
+    /* qBittorrent Status Pill */
+    .qbit-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      border-radius: 99px;
+      background: rgba(139, 92, 246, 0.12);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      color: #c4b5fd;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .qbit-pill.offline {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+    }
+
+    /* Disk Usage Widget */
+    .disk-widget {
+      display: inline-flex;
+      flex-direction: column;
+      gap: 3px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 6px 12px;
+      min-width: 140px;
+      cursor: default;
+      transition: border-color 0.2s;
+    }
+
+    .disk-widget:hover {
+      border-color: var(--border-light);
+    }
+
+    .disk-widget-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .disk-widget-free {
+      color: #6ee7b7;
+    }
+
+    .disk-widget-total {
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .disk-mini-bar {
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .disk-mini-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #10b981, #8b5cf6);
+      transition: width 0.4s ease;
+    }
+
+    /* ==========================================================================
+       MAIN CONTENT CONTAINER
+       ========================================================================== */
+    .app-main {
+      flex: 1;
+      max-width: 1600px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    /* Tab Panels */
+    .tab-panel {
+      display: none;
+      animation: fadeIn 0.2s ease forwards;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ==========================================================================
+       CARDS & UI PRIMITIVES
+       ========================================================================== */
+    .card {
+      background: var(--surface);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-md);
+      transition: border-color 0.2s;
+    }
+
+    .card:hover {
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-bright);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-subtitle {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* Grid Layouts */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: minmax(420px, 540px) 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .row-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+
+    /* Form Inputs */
+    label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    textarea,
+    select {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: rgba(11, 15, 25, 0.85);
+      color: var(--text-bright);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      outline: none;
+      font-size: 13px;
+      margin-bottom: 14px;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+
+    textarea {
+      min-height: 85px;
+      resize: vertical;
+      font-family: monospace;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25);
+      background: rgba(15, 23, 42, 0.95);
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      margin-bottom: 14px;
+      text-transform: none;
+      color: var(--text);
+      font-size: 13px;
+      user-select: none;
+    }
+
+    .checkbox-row input[type="checkbox"],
+    .checkbox-row input[type="radio"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    /* Buttons */
+    button, .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: 0;
+      color: #ffffff;
+      padding: 10px 18px;
+      border-radius: var(--radius-md);
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      background: var(--accent-gradient);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      text-decoration: none;
+      user-select: none;
+    }
+
+    button:hover:not(:disabled),
+    .btn:hover:not(:disabled) {
+      filter: brightness(1.12);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px var(--accent-glow);
+    }
+
+    button:active:not(:disabled),
+    .btn:active:not(:disabled) {
+      transform: translateY(0);
+      filter: brightness(0.95);
+    }
+
+    button:disabled,
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    button.btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      border: 1px solid var(--border);
+      box-shadow: none;
+    }
+    button.btn-secondary:hover:not(:disabled) {
+      background: var(--surface-hover);
+      color: var(--text-bright);
+      border-color: var(--border-light);
+    }
+
+    button.btn-success {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
+    }
+    button.btn-success:hover:not(:disabled) {
+      box-shadow: 0 4px 16px var(--success-glow);
+    }
+
+    button.btn-danger {
+      background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+    }
+
+    button.btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: var(--radius-sm);
+    }
+
+    button.btn-block {
+      width: 100%;
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 9px;
+      border-radius: 99px;
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 0.02em;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .badge-ok {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.3);
+      color: #6ee7b7;
+    }
+
+    .badge-warn {
+      background: rgba(245, 158, 11, 0.15);
+      border-color: rgba(245, 158, 11, 0.3);
+      color: #fcd34d;
+    }
+
+    .badge-err {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+    }
+
+    .badge-info {
+      background: rgba(6, 182, 212, 0.15);
+      border-color: rgba(6, 182, 212, 0.3);
+      color: #67e8f9;
+    }
+
+    .badge-purple {
+      background: rgba(139, 92, 246, 0.15);
+      border-color: rgba(139, 92, 246, 0.3);
+      color: #c4b5fd;
+    }
+
+    /* ==========================================================================
+       TAB 1: ADD RELEASE (MAGNET OR .TORRENT DRAG & DROP)
+       ========================================================================== */
+    .toggle-group {
+      display: flex;
+      background: rgba(11, 15, 25, 0.85);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 4px;
+      gap: 4px;
+      margin-bottom: 16px;
+    }
+
+    .toggle-opt-btn {
+      flex: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .toggle-opt-btn:hover {
+      color: var(--text-bright);
+    }
+
+    .toggle-opt-btn.active {
+      background: var(--surface-hover);
+      color: var(--text-bright);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Drag & Drop Zone */
+    .dropzone {
+      position: relative;
+      border: 2px dashed rgba(139, 92, 246, 0.35);
+      border-radius: var(--radius-lg);
+      background: rgba(139, 92, 246, 0.03);
+      padding: 28px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+
+    .dropzone:hover,
+    .dropzone.dragover {
+      border-color: var(--accent);
+      background: rgba(139, 92, 246, 0.1);
+      transform: translateY(-1px);
+      box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+    }
+
+    .dropzone-input {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .dropzone-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 10px;
+      color: #a78bfa;
+      transition: transform 0.2s;
+    }
+
+    .dropzone:hover .dropzone-icon {
+      transform: scale(1.1);
+    }
+
+    .dropzone-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-bright);
+      margin-bottom: 4px;
+    }
+
+    .dropzone-desc {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* Selected Torrent File Card */
+    .selected-file-card {
+      display: none;
+      background: rgba(139, 92, 246, 0.1);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .selected-file-card.show {
+      display: flex;
+    }
+
+    .selected-file-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 0;
+    }
+
+    .selected-file-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-bright);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .selected-file-sub {
+      font-size: 11px;
+      color: var(--muted);
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* Paste Magnet Button Row */
+    .magnet-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .quick-link-btn {
+      background: transparent;
+      border: none;
+      color: #a78bfa;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: none;
+    }
+
+    .quick-link-btn:hover {
+      background: rgba(139, 92, 246, 0.15);
+      color: #c4b5fd;
+      transform: none;
+    }
+
+    /* TMDB Posters Grid */
+    .posters-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 14px;
+      max-height: 520px;
+      overflow-y: auto;
+      padding: 4px;
+    }
+
+    .poster-card {
+      background: rgba(11, 15, 25, 0.7);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+    }
+
+    .poster-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .poster-card.selected {
+      border: 2px solid var(--success);
+      box-shadow: 0 0 16px var(--success-glow);
+    }
+
+    .poster-card.selected::after {
+      content: "✓";
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: var(--success);
+      color: #fff;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 800;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    }
+
+    .poster-media {
+      aspect-ratio: 2/3;
+      width: 100%;
+      background: #060911;
+      position: relative;
+    }
+
+    .poster-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .poster-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      text-align: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      background: linear-gradient(135deg, rgba(30, 27, 75, 0.5), rgba(11, 15, 25, 0.9));
+    }
+
+    .poster-body {
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      flex: 1;
+    }
+
+    .poster-title {
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--text-bright);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .poster-meta {
+      font-size: 10px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .poster-rating {
+      color: #fbbf24;
+      font-weight: 700;
+    }
+
+    /* Submit Action Buttons in Add Form */
+    .add-action-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    /* ==========================================================================
+       TAB 2: JOBS (AUTO-IMPORT QUEUE)
+       ========================================================================== */
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+      align-items: center;
+    }
+
+    .filter-btn {
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      cursor: pointer;
+      box-shadow: none;
+    }
+
+    .filter-btn:hover {
+      background: var(--surface-hover);
+      color: var(--text-bright);
+      transform: none;
+    }
+
+    .filter-btn.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .job-card {
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 12px;
+      transition: all 0.2s;
+    }
+
+    .job-card:hover {
+      border-color: var(--border-light);
+      background: rgba(17, 24, 39, 0.8);
+    }
+
+    .job-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .job-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-bright);
+      word-break: break-word;
+    }
+
+    .job-meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .job-subbox {
+      margin-top: 12px;
+      padding: 14px;
+      background: rgba(0, 0, 0, 0.35);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+    }
+
+    .job-subbox-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-bright);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* File List inside Job */
+    .file-select-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      font-size: 12px;
+    }
+
+    .file-select-item:last-child {
+      border-bottom: none;
+    }
+
+    .file-info-col {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .file-name-text {
+      font-weight: 600;
+      color: var(--text);
+      word-break: break-all;
+    }
+
+    .file-details-text {
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    /* ==========================================================================
+       TAB 3: MUX STUDIO (INTERACTIVE TRACK & SUBTITLE EDITOR)
+       ========================================================================== */
+    .mux-layout {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .mux-job-item {
+      padding: 12px 14px;
+      border-radius: var(--radius-md);
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .mux-job-item:hover {
+      background: var(--surface-hover);
+      border-color: var(--border-light);
+    }
+
+    .mux-job-item.selected {
+      border-color: var(--accent);
+      background: rgba(139, 92, 246, 0.12);
+      box-shadow: 0 0 14px rgba(139, 92, 246, 0.2);
+    }
+
+    .track-section-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #c4b5fd;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin: 18px 0 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .track-row-item {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 10px 14px;
+      background: rgba(11, 15, 25, 0.7);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      margin-bottom: 8px;
+      transition: all 0.2s;
+    }
+
+    .track-row-item:hover {
+      border-color: var(--border-light);
+    }
+
+    .track-row-item.excluded {
+      opacity: 0.45;
+      background: rgba(11, 15, 25, 0.3);
+    }
+
+    .track-drag-handle {
+      cursor: default;
+      color: var(--muted);
+      display: flex;
+      gap: 4px;
+    }
+
+    .reorder-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      color: var(--text);
+      width: 26px;
+      height: 26px;
+      padding: 0;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .reorder-btn:hover {
+      background: var(--surface-hover);
+      color: var(--accent);
+      transform: none;
+    }
+
+    .track-details {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .track-title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .track-main-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-bright);
+    }
+
+    .track-controls-col {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    /* Live Muxing Progress Bar */
+    .mux-progress-box {
+      background: rgba(11, 15, 25, 0.9);
+      border: 1px solid rgba(139, 92, 246, 0.4);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 0 25px rgba(139, 92, 246, 0.15);
+    }
+
+    .mux-progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+
+    .mux-progress-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #c4b5fd;
+    }
+
+    .mux-progress-percent {
+      font-size: 26px;
+      font-weight: 900;
+      color: #ffffff;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .mux-bar {
+      height: 10px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 99px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+
+    .mux-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #8b5cf6, #10b981);
+      transition: width 0.3s ease;
+      box-shadow: 0 0 12px rgba(139, 92, 246, 0.5);
+    }
+
+    /* Log Viewer Console */
+    .log-viewer {
+      background: #030712;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      max-height: 220px;
+      overflow-y: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 11px;
+      color: #94a3b8;
+      white-space: pre-wrap;
+      line-height: 1.45;
+    }
+
+    /* ==========================================================================
+       TAB 4: TORRENTS (QBITTORRENT LIST)
+       ========================================================================== */
+    .torrent-card {
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .torrent-card:hover {
+      border-color: var(--border-light);
+      background: var(--surface-hover);
+    }
+
+    .torrent-card.selected {
+      border-color: var(--accent);
+      background: rgba(139, 92, 246, 0.1);
+      box-shadow: 0 0 12px rgba(139, 92, 246, 0.2);
+    }
+
+    .torrent-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-bright);
+      margin-bottom: 6px;
+      word-break: break-all;
+    }
+
+    .torrent-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 11px;
+      color: var(--muted);
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .progress-track {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--success));
+      transition: width 0.3s ease;
+    }
+
+    /* ==========================================================================
+       TAB 5: IMPORT HISTORY
+       ========================================================================== */
+    .history-table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--surface-card);
+    }
+
+    .history-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      text-align: left;
+    }
+
+    .history-table th {
+      background: rgba(11, 15, 25, 0.9);
+      padding: 12px 14px;
+      font-weight: 700;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      text-transform: uppercase;
+      font-size: 10px;
+      letter-spacing: 0.05em;
+    }
+
+    .history-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: var(--text);
+    }
+
+    .history-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    /* ==========================================================================
+       FOOTER
+       ========================================================================== */
+    .app-footer {
+      background: rgba(11, 15, 25, 0.95);
+      border-top: 1px solid var(--border);
+      padding: 18px 24px;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: auto;
+    }
+
+    .footer-inner {
+      max-width: 1600px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .footer-paths {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 11px;
+      color: #94a3b8;
+    }
+
+    .footer-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* ==========================================================================
+       TOAST NOTIFICATIONS
+       ========================================================================== */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 1000;
+      max-width: 400px;
+      pointer-events: none;
+    }
+
+    .toast-msg {
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      background: rgba(17, 24, 39, 0.96);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(14px);
+      box-shadow: var(--shadow-lg);
+      color: var(--text-bright);
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      pointer-events: auto;
+      animation: toastIn 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    .toast-msg.toast-ok { border-color: rgba(16, 185, 129, 0.5); }
+    .toast-msg.toast-err { border-color: rgba(239, 68, 68, 0.5); }
+    .toast-msg.toast-warn { border-color: rgba(245, 158, 11, 0.5); }
+
+    @keyframes toastIn {
+      from { transform: translateY(12px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 1024px) {
+      .header-inner { flex-direction: column; align-items: stretch; gap: 12px; }
+      .header-nav { overflow-x: auto; padding-bottom: 6px; }
+      .header-widgets { justify-content: space-between; }
+      .grid-2 { grid-template-columns: 1fr; }
+      .mux-layout { grid-template-columns: 1fr; }
+      .footer-inner { flex-direction: column; align-items: flex-start; gap: 10px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ========================================================================
+       STANDARD HEADER (RESPONSIVE)
+       ======================================================================== -->
+  <header class="app-header">
+    <div class="header-inner">
+      <!-- Branding -->
+      <div class="brand-wrap" onclick="switchTab('tab-add')">
+        <div class="brand-logo" title="Torrent Media Manager">
+          <svg class="icon" viewBox="0 0 24 24" style="color: #ffffff;">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div class="brand-info">
+          <div class="brand-title">
+            <span>Torrent Media Manager</span>
+            <span class="version-badge">v1.1.0</span>
+          </div>
+          <span class="brand-tag">Plex &bull; Jellyfin &bull; qBittorrent &bull; mkvmerge</span>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="header-nav" id="mainNav">
+        <button class="nav-tab-btn active" data-tab="tab-add" onclick="switchTab('tab-add')">
+          <span>➕ Добавить релиз</span>
+        </button>
+        <button class="nav-tab-btn" data-tab="tab-jobs" onclick="switchTab('tab-jobs')">
+          <span>📋 Задачи импорта</span>
+          <span class="nav-tab-badge" id="navJobsCount">0</span>
+        </button>
+        <button class="nav-tab-btn" data-tab="tab-mux" onclick="switchTab('tab-mux')">
+          <span>🎛️ Mux Studio</span>
+          <span class="nav-tab-badge" id="navMuxCount">0</span>
+        </button>
+        <button class="nav-tab-btn" data-tab="tab-torrents" onclick="switchTab('tab-torrents')">
+          <span>⬇️ Раздачи qBit</span>
+          <span class="nav-tab-badge" id="navTorrentsCount">0</span>
+        </button>
+        <button class="nav-tab-btn" data-tab="tab-history" onclick="switchTab('tab-history')">
+          <span>📜 История</span>
+        </button>
+      </nav>
+
+      <!-- Right Header Widgets -->
+      <div class="header-widgets">
+        <!-- Live SSE Realtime Dot -->
+        <div class="realtime-pill" id="realtimeStatus" title="Server-Sent Events: /api/events">
+          <span class="pulse-dot"></span>
+          <span id="realtimeText">Realtime</span>
+        </div>
+
+        <!-- qBittorrent status pill -->
+        <div class="qbit-pill" id="qbitStatusPill">
+          <span>qBit: Подключен</span>
+        </div>
+
+        <!-- Disk Usage Widget -->
+        <div class="disk-widget" id="diskHeaderWidget" title="Хранилище /mnt/main_data/Media">
+          <div class="disk-widget-top">
+            <span class="disk-widget-free" id="hdrDiskFree">— TB св.</span>
+            <span class="disk-widget-total" id="hdrDiskTotal">из — TB</span>
+          </div>
+          <div class="disk-mini-bar">
+            <div class="disk-mini-fill" id="hdrDiskBar"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       MAIN APPLICATION WORKSPACE
+       ======================================================================== -->
+  <main class="app-main">
+
+    <!-- ======================================================================
+         TAB 1: ДОБАВИТЬ РЕЛИЗ (ADD RELEASE)
+         ====================================================================== -->
+    <section class="tab-panel active" id="tab-add">
+      <div class="grid-2">
+        <!-- Left Column: Source Input & Media Metadata Form -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">1. Источник загрузки</div>
+              <div class="card-subtitle">Magnet-ссылка или загрузка .torrent файла</div>
+            </div>
+          </div>
+
+          <!-- Switcher: Magnet vs .torrent file -->
+          <div class="toggle-group">
+            <button class="toggle-opt-btn active" id="btnModeMagnet" onclick="setAddMode('magnet')">
+              <span>🔗 Magnet-ссылка</span>
+            </button>
+            <button class="toggle-opt-btn" id="btnModeFile" onclick="setAddMode('file')">
+              <span>📁 Загрузка .torrent файла</span>
+            </button>
+          </div>
+
+          <!-- Mode A: Magnet Input -->
+          <div id="paneMagnet">
+            <div class="magnet-header-row">
+              <label for="magnetInput">Magnet URI</label>
+              <button class="quick-link-btn" onclick="pasteFromClipboard()">
+                <span>📋 Вставить из буфера</span>
+              </button>
+            </div>
+            <textarea id="magnetInput" placeholder="magnet:?xt=urn:btih:..."></textarea>
+          </div>
+
+          <!-- Mode B: .torrent Drag & Drop Zone -->
+          <div id="paneFile" style="display: none;">
+            <label>Файл .torrent</label>
+            <div class="dropzone" id="torrentDropzone">
+              <input type="file" id="torrentFileInput" class="dropzone-input" accept=".torrent">
+              <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              <div class="dropzone-title" id="dropzoneTitle">Перетащите .torrent файл сюда</div>
+              <div class="dropzone-desc">или нажмите для выбора файла на устройстве</div>
+            </div>
+
+            <!-- Selected File Details Banner -->
+            <div class="selected-file-card" id="selectedTorrentCard">
+              <div class="selected-file-meta">
+                <div class="selected-file-name" id="selectedTorrentName">—</div>
+                <div class="selected-file-sub">
+                  <span id="selectedTorrentSize">— KB</span>
+                  <span>&bull;</span>
+                  <span id="selectedTorrentHashBadge" class="badge badge-purple" style="font-family: monospace;">Hash: —</span>
+                </div>
+              </div>
+              <button class="btn-secondary btn-sm" onclick="clearSelectedTorrentFile()">Удалить</button>
+            </div>
+          </div>
+
+          <!-- Media Type & Search Parameters -->
+          <div style="margin-top: 14px;">
+            <div class="row">
+              <div>
+                <label for="mediaType">Категория медиа</label>
+                <select id="mediaType" onchange="onMediaTypeChange()">
+                  <option value="movie">🎬 Фильм (movie)</option>
+                  <option value="tv">📺 Сериал (tv)</option>
+                  <option value="anime">⛩️ Аниме (anime)</option>
+                  <option value="cartoon">🎨 Мультфильм (cartoon)</option>
+                </select>
+              </div>
+              <div>
+                <label for="manualQuery">Ручной поиск TMDB</label>
+                <input id="manualQuery" type="text" placeholder="Название фильма/сериала">
+              </div>
+            </div>
+
+            <!-- Action: Analyze -->
+            <button class="btn btn-secondary btn-block" id="btnAnalyze" onclick="handleAnalyze()">
+              <span>🔍 Анализировать и найти метаданные в TMDB</span>
+            </button>
+          </div>
+
+          <!-- Section 2: Metadata & Episode Configuration -->
+          <div style="margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--border);">
+            <div class="card-header" style="padding-bottom: 8px; margin-bottom: 14px;">
+              <div>
+                <div class="card-title">2. Именование в медиатеке</div>
+                <div class="card-subtitle">Формирование целевой структуры Plex/Jellyfin</div>
+              </div>
+            </div>
+
+            <label for="plexTitle">Название папки релиза</label>
+            <input id="plexTitle" placeholder="Пример: Cyberpunk: Edgerunners">
+
+            <div class="row">
+              <div>
+                <label for="year">Год выпуска</label>
+                <input id="year" placeholder="2023">
+              </div>
+              <div>
+                <label for="titleFromTmdb">TMDB Заголовок</label>
+                <input id="titleFromTmdb" placeholder="Автозаполнение" readonly style="opacity: 0.8;">
+              </div>
+            </div>
+
+            <!-- Episodes options for TV / Anime -->
+            <div id="episodeFields" style="display: none;">
+              <div class="row-3">
+                <div>
+                  <label for="season">Сезон</label>
+                  <input id="season" type="number" min="1" value="1">
+                </div>
+                <div>
+                  <label for="episode">Серия</label>
+                  <input id="episode" type="number" min="1" value="1">
+                </div>
+                <div>
+                  <label for="startEpisode">Старт. серия</label>
+                  <input id="startEpisode" type="number" min="1" value="1">
+                </div>
+              </div>
+
+              <label for="episodeTitle">Название эпизода (опционально)</label>
+              <input id="episodeTitle" placeholder="Необязательно для пакетных релизов">
+
+              <label class="checkbox-row">
+                <input id="seasonPack" type="checkbox" checked>
+                <span>Пакетный импорт (все серии сезона / Season Pack)</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Section 3: Submit Buttons -->
+          <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border);">
+            <div class="add-action-buttons">
+              <button class="btn btn-success" id="btnAddFull" onclick="handleAddTorrent(false)">
+                <span>📥 Скачать полностью</span>
+              </button>
+              <button class="btn btn-secondary" id="btnAddSelective" onclick="handleAddTorrent(true)">
+                <span>🎯 Выбрать файлы (Selective)</span>
+              </button>
+            </div>
+            <div style="margin-top: 10px; display: flex; justify-content: flex-end;">
+              <button class="btn-secondary btn-sm" onclick="resetAddForm()">🧹 Очистить форму</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: TMDB Posters Gallery Grid -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Галерея совпадений TMDB</div>
+              <div class="card-subtitle">Нажмите на карточку для автозаполнения названия и постера</div>
+            </div>
+            <span class="badge badge-purple" id="tmdbCountBadge">0 результатов</span>
+          </div>
+
+          <div class="posters-grid" id="postersGrid">
+            <div style="grid-column: 1/-1; text-align: center; color: var(--muted); padding: 40px 20px;">
+              Вставьте magnet-ссылку, перетащите .torrent файл или введите название фильма для поиска метаданных.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         TAB 2: ЗАДАЧИ ИМПОРТА (JOBS QUEUE)
+         ====================================================================== -->
+    <section class="tab-panel" id="tab-jobs">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Очередь задач автоимпорта</div>
+            <div class="card-subtitle">Контроль этапов: загрузка, выбор файлов, склейка mkvmerge и финальный перенос</div>
+          </div>
+          <button class="btn-secondary btn-sm" onclick="fetchJobs(true)">🔄 Обновить список</button>
+        </div>
+
+        <!-- Filter bar -->
+        <div class="filter-bar" id="jobsFilterBar">
+          <button class="filter-btn active" data-filter="all" onclick="filterJobs('all')">Все задачи</button>
+          <button class="filter-btn" data-filter="waiting_files" onclick="filterJobs('waiting_files')">🎯 Выбор файлов</button>
+          <button class="filter-btn" data-filter="needs_mux" onclick="filterJobs('needs_mux')">🎛️ Mux Studio</button>
+          <button class="filter-btn" data-filter="muxing" onclick="filterJobs('muxing')">⚙️ Склейка</button>
+          <button class="filter-btn" data-filter="waiting" onclick="filterJobs('waiting')">⏳ Ожидание</button>
+          <button class="filter-btn" data-filter="error" onclick="filterJobs('error')">❌ Ошибки</button>
+        </div>
+
+        <!-- Jobs list container -->
+        <div id="jobsListContainer">
+          <div style="text-align: center; color: var(--muted); padding: 40px;">Загрузка задач...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         TAB 3: MUX STUDIO (INTERACTIVE TRACK & SUBTITLE EDITOR)
+         ====================================================================== -->
+    <section class="tab-panel" id="tab-mux">
+      <div class="mux-layout">
+        <!-- Left Column: Releases awaiting mux -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Релизы для Muxing</div>
+              <div class="card-subtitle">Ожидают настройки дорожек</div>
+            </div>
+          </div>
+
+          <div id="muxJobsList">
+            <div style="color: var(--muted); font-size: 13px; text-align: center; padding: 20px;">
+              Нет релизов, требующих склейки.
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Interactive Track Studio -->
+        <div class="card" id="muxEditorPane">
+          <div id="muxEmptyPlaceholder" style="text-align: center; padding: 60px 20px; color: var(--muted);">
+            <div style="font-size: 40px; margin-bottom: 12px;">🎛️</div>
+            <div style="font-size: 16px; font-weight: 700; color: var(--text-bright); margin-bottom: 6px;">
+              Mux Studio не активна
+            </div>
+            <div>Выберите релиз из списка слева или завершите загрузку релиза с внешними дорожками.</div>
+          </div>
+
+          <div id="muxActiveWorkspace" style="display: none;">
+            <!-- Header for active Mux Release -->
+            <div class="card-header">
+              <div>
+                <div class="card-title" id="muxReleaseTitle">—</div>
+                <div class="card-subtitle" id="muxReleaseSubtitle">—</div>
+              </div>
+              <div style="display: flex; gap: 8px;" id="muxHeaderBadges">
+                <span class="badge badge-purple" id="muxStatusBadge">needs_mux</span>
+              </div>
+            </div>
+
+            <!-- Live Muxing Progress View (Active during status='muxing') -->
+            <div class="mux-progress-box" id="muxProgressBox" style="display: none;">
+              <div class="mux-progress-header">
+                <div>
+                  <div class="mux-progress-title" id="muxProgressText">Склейка контейнеров...</div>
+                  <div style="font-size: 12px; color: var(--muted);" id="muxCurrentFileName">—</div>
+                </div>
+                <div class="mux-progress-percent" id="muxProgressPercent">0.0%</div>
+              </div>
+              <div class="mux-bar">
+                <div class="mux-bar-fill" id="muxBarFill"></div>
+              </div>
+
+              <!-- Collapsible live log viewer -->
+              <details style="margin-top: 12px;">
+                <summary style="font-size: 12px; font-weight: 700; color: #a78bfa; cursor: pointer;">
+                  Терминал mkvmerge (Live Log)
+                </summary>
+                <div class="log-viewer" id="muxLogConsole" style="margin-top: 8px;">
+                  Ожидание логов mkvmerge...
+                </div>
+              </details>
+            </div>
+
+            <!-- Review view if completed -->
+            <div id="muxReviewNotice" style="display: none; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-md); padding: 14px; margin-bottom: 16px;">
+              <div style="font-weight: 700; color: #6ee7b7; margin-bottom: 4px;">✅ Склейка завершена успешно!</div>
+              <div style="font-size: 12px; color: var(--muted);" id="muxResultPath">—</div>
+            </div>
+
+            <!-- Section 1: Internal Video Tracks -->
+            <div class="track-section-title">
+              <span>📼 Внутренние дорожки видео (Source 0)</span>
+            </div>
+            <div id="internalTracksContainer">
+              <div style="color: var(--muted); font-size: 12px;">Загрузка информации о контейнере...</div>
+            </div>
+
+            <!-- Section 2: External Tracks from Release Folder -->
+            <div class="track-section-title">
+              <span>🎧 Внешние дорожки из релиза (External Tracks)</span>
+            </div>
+            <div id="externalTracksContainer">
+              <div style="color: var(--muted); font-size: 12px;">Поиск внешних дорожек...</div>
+            </div>
+
+            <!-- Section 3: Action Buttons -->
+            <div style="margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+              <div style="display: flex; gap: 8px;">
+                <button class="btn btn-secondary" onclick="handleSkipMux()">⏩ Оставить без склейки (Skip)</button>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn btn-success" id="btnStartMux" onclick="handleStartMux()">
+                  <span>🚀 Запустить склейку mkvmerge</span>
+                </button>
+                <button class="btn btn-success" id="btnConfirmMux" style="display: none;" onclick="handleConfirmMux()">
+                  <span>✅ Подтвердить и импортировать</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         TAB 4: РАЗДАЧИ QBIT (QBITTORRENT TRANSFERS)
+         ====================================================================== -->
+    <section class="tab-panel" id="tab-torrents">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Раздачи в qBittorrent</div>
+            <div class="card-subtitle">Мониторинг прогресса, скоростей и создание импорта</div>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn-danger btn-sm" id="btnDeleteTorrent" style="display: none;" onclick="handleDeleteTorrent()">
+              🗑️ Удалить раздачу
+            </button>
+            <button class="btn-secondary btn-sm" onclick="fetchTorrents(true)">🔄 Обновить</button>
+          </div>
+        </div>
+
+        <div id="torrentsListContainer">
+          <div style="text-align: center; color: var(--muted); padding: 40px;">Загрузка списка раздач...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         TAB 5: ИСТОРИЯ ИМПОРТА (IMPORT HISTORY)
+         ====================================================================== -->
+    <section class="tab-panel" id="tab-history">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">История выполненных импортов</div>
+            <div class="card-subtitle">Журнал перемещения релизов в библиотеки Plex / Jellyfin</div>
+          </div>
+          <button class="btn-secondary btn-sm" onclick="fetchHistory(true)">🔄 Обновить журнал</button>
+        </div>
+
+        <div class="history-table-wrap">
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th>Дата / Время</th>
+                <th>Название релиза</th>
+                <th>Категория</th>
+                <th>Сезон/Серия</th>
+                <th>Режим</th>
+                <th>Info Hash</th>
+                <th>Детали</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody">
+              <tr>
+                <td colspan="7" style="text-align: center; color: var(--muted); padding: 30px;">
+                  Загрузка истории импортов...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================================
+       STANDARD FOOTER
+       ======================================================================== -->
+  <footer class="app-footer">
+    <div class="footer-inner">
+      <div class="footer-left">
+        <strong>Torrent Media Manager</strong>
+        <span class="version-badge">v1.1.0</span>
+        <span>&bull;</span>
+        <span>Podman Quadlet &bull; Host network: 192.168.1.135:8000</span>
+      </div>
+
+      <div class="footer-paths">
+        <span title="Целевая медиатека">📁 /mnt/main_data/Media</span>
+        <span>&bull;</span>
+        <span title="Каталог загрузок qBittorrent">📁 /mnt/dlc_data/torrents</span>
+      </div>
+
+      <div class="footer-right">
+        <span style="color: #6ee7b7;">● Пайплайн активен</span>
+        <span>&bull;</span>
+        <span>mkvmerge v84+</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- ========================================================================
+       APPLICATION LOGIC & CLIENT SCRIPTS
+       ======================================================================== -->
+  <script>
+    /* ==========================================================================
+       APPLICATION STATE
+       ========================================================================== */
+    const State = {
+      version: "v1.1.0",
+      currentTab: "tab-add",
+      addMode: "magnet", // 'magnet' | 'file'
+      selectedTorrentFile: null,
+      torrents: [],
+      jobs: [],
+      history: [],
+      activeMux: {},
+      disk: null,
+      selectedTorrentHash: null,
+      selectedTmdbItem: null,
+      tmdbResults: [],
+      activeMuxJobId: null,
+      fileDrafts: {}, // jobId -> { files, selectedIds }
+      muxTrackDrafts: {}, // jobId -> { internalAudio, internalSubs, externalAudio, externalSubs }
+      sseEventSource: null,
+      filterJobsStatus: "all",
+      isMuxingActive: false
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    /* ==========================================================================
+       TOAST NOTIFICATIONS
+       ========================================================================== */
+    const Toast = {
+      show(text, type = "info") {
+        const c = $("toastContainer");
+        const el = document.createElement("div");
+        el.className = `toast-msg ${type === "error" ? "toast-err" : type === "success" ? "toast-ok" : type === "warn" ? "toast-warn" : ""}`;
+        
+        let icon = "ℹ️";
+        if (type === "success") icon = "✅";
+        if (type === "error") icon = "❌";
+        if (type === "warn") icon = "⚠️";
+
+        el.innerHTML = `<span>${icon}</span><span>${escapeHtml(text)}</span>`;
+        c.appendChild(el);
+
+        setTimeout(() => {
+          el.style.opacity = "0";
+          el.style.transform = "translateY(8px)";
+          el.style.transition = "all 0.25s ease";
+          setTimeout(() => el.remove(), 250);
+        }, 4000);
+      },
+      success(msg) { this.show(msg, "success"); },
+      error(msg) { this.show(msg, "error"); },
+      warn(msg) { this.show(msg, "warn"); },
+      info(msg) { this.show(msg, "info"); }
+    };
+
+    /* ==========================================================================
+       API REQUEST WRAPPER
+       ========================================================================== */
+    async function apiRequest(url, options = {}, silent = false) {
+      try {
+        const res = await fetch(url, options);
+        const contentType = res.headers.get("content-type");
+        let data;
+
+        if (contentType && contentType.includes("application/json")) {
+          data = await res.json();
+        } else {
+          data = { status: res.ok ? "ok" : "error", message: await res.text() };
+        }
+
+        if (!res.ok) {
+          throw new Error(data.message || `HTTP ${res.status}`);
+        }
+        return data;
+      } catch (err) {
+        if (!silent) {
+          Toast.error(err.message);
+        }
+        throw err;
+      }
+    }
+
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return "";
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function formatBytes(bytes) {
+      const n = Number(bytes || 0);
+      if (n <= 0) return "0 B";
+      const units = ["B", "KB", "MB", "GB", "TB", "PB"];
+      const i = Math.floor(Math.log(n) / Math.log(1024));
+      return `${(n / Math.pow(1024, i)).toFixed(2)} ${units[i]}`;
+    }
+
+    /* ==========================================================================
+       TAB ROUTING & SWITCHING
+       ========================================================================== */
+    function switchTab(tabId) {
+      State.currentTab = tabId;
+      window.location.hash = tabId;
+
+      document.querySelectorAll(".nav-tab-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.tab === tabId);
+      });
+
+      document.querySelectorAll(".tab-panel").forEach(panel => {
+        panel.classList.toggle("active", panel.id === tabId);
+      });
+
+      if (tabId === "tab-jobs") fetchJobs();
+      if (tabId === "tab-torrents") fetchTorrents();
+      if (tabId === "tab-history") fetchHistory();
+      if (tabId === "tab-mux") updateMuxJobsList();
+    }
+
+    /* ==========================================================================
+       MODE SWITCHER: MAGNET vs .TORRENT FILE
+       ========================================================================== */
+    function setAddMode(mode) {
+      State.addMode = mode;
+      $("btnModeMagnet").classList.toggle("active", mode === "magnet");
+      $("btnModeFile").classList.toggle("active", mode === "file");
+
+      $("paneMagnet").style.display = mode === "magnet" ? "block" : "none";
+      $("paneFile").style.display = mode === "file" ? "block" : "none";
+    }
+
+    async function pasteFromClipboard() {
+      try {
+        const text = await navigator.clipboard.readText();
+        if (text && text.trim().startsWith("magnet:")) {
+          $("magnetInput").value = text.trim();
+          Toast.success("Magnet-ссылка вставлена");
+          handleAnalyze();
+        } else if (text) {
+          $("magnetInput").value = text.trim();
+          Toast.info("Текст вставлен");
+        }
+      } catch (err) {
+        Toast.warn("Разрешите доступ к буферу обмена или вставьте вручную (Ctrl+V)");
+      }
+    }
+
+    function setupDropzone() {
+      const dropzone = $("torrentDropzone");
+      const fileInput = $("torrentFileInput");
+      const titleEl = $("dropzoneTitle");
+
+      ["dragenter", "dragover"].forEach(name => {
+        dropzone.addEventListener(name, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropzone.classList.add("dragover");
+          if (titleEl) titleEl.textContent = "Отпустите .torrent файл для анализа";
+        });
+      });
+
+      ["dragleave", "drop"].forEach(name => {
+        dropzone.addEventListener(name, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropzone.classList.remove("dragover");
+          if (titleEl) titleEl.textContent = "Перетащите .torrent файл сюда";
+        });
+      });
+
+      dropzone.addEventListener("drop", (e) => {
+        const files = e.dataTransfer.files;
+        if (files && files.length) {
+          handleTorrentFileSelected(files[0]);
+        }
+      });
+
+      fileInput.addEventListener("change", (e) => {
+        if (e.target.files && e.target.files.length) {
+          handleTorrentFileSelected(e.target.files[0]);
+        }
+      });
+    }
+
+    function handleTorrentFileSelected(file) {
+      if (!file.name.toLowerCase().endsWith(".torrent")) {
+        Toast.error("Пожалуйста, выберите файл с расширением .torrent");
+        return;
+      }
+
+      State.selectedTorrentFile = file;
+      $("selectedTorrentName").textContent = file.name;
+      $("selectedTorrentSize").textContent = formatBytes(file.size);
+      $("selectedTorrentHashBadge").textContent = "Анализ...";
+      $("selectedTorrentCard").classList.add("show");
+
+      Toast.success(`Файл ${file.name} выбран`);
+      handleAnalyze();
+    }
+
+    function clearSelectedTorrentFile() {
+      State.selectedTorrentFile = null;
+      $("torrentFileInput").value = "";
+      $("selectedTorrentCard").classList.remove("show");
+      Toast.info(".torrent файл удален из формы");
+    }
+
+    function onMediaTypeChange() {
+      const type = $("mediaType").value;
+      const isEpisodic = (type === "tv" || type === "anime");
+      $("episodeFields").style.display = isEpisodic ? "block" : "none";
+    }
+
+    function resetAddForm() {
+      $("magnetInput").value = "";
+      clearSelectedTorrentFile();
+      $("manualQuery").value = "";
+      $("plexTitle").value = "";
+      $("titleFromTmdb").value = "";
+      $("year").value = "";
+      $("season").value = "1";
+      $("episode").value = "1";
+      $("startEpisode").value = "1";
+      $("episodeTitle").value = "";
+      $("postersGrid").innerHTML = `
+        <div style="grid-column: 1/-1; text-align: center; color: var(--muted); padding: 40px 20px;">
+          Вставьте magnet-ссылку, перетащите .torrent файл или введите название фильма для поиска метаданных.
+        </div>`;
+      $("tmdbCountBadge").textContent = "0 результатов";
+      State.selectedTmdbItem = null;
+      Toast.info("Форма сброшена");
+    }
+
+    /* ==========================================================================
+       ANALYZE & TMDB METADATA SEARCH
+       ========================================================================== */
+    async function handleAnalyze() {
+      const mode = State.addMode;
+      const magnet = $("magnetInput").value.trim();
+      const file = State.selectedTorrentFile;
+      const manualQuery = $("manualQuery").value.trim();
+      const mediaType = $("mediaType").value;
+
+      if (mode === "magnet" && !magnet && !manualQuery) {
+        Toast.warn("Введите magnet-ссылку или название для поиска");
+        return;
+      }
+      if (mode === "file" && !file && !manualQuery) {
+        Toast.warn("Загрузите .torrent файл или введите название для поиска");
+        return;
+      }
+
+      const btn = $("btnAnalyze");
+      const origText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `<span>⏳ Поиск метаданных...</span>`;
+
+      try {
+        const formData = new FormData();
+        formData.append("media_type", mediaType);
+        formData.append("manual_query", manualQuery);
+
+        if (mode === "file" && file) {
+          formData.append("torrent_file", file);
+        } else if (magnet) {
+          formData.append("magnet", magnet);
+        }
+
+        const data = await apiRequest("/api/analyze", { method: "POST", body: formData });
+        if (data.status === "ok") {
+          renderTmdbResults(data.results || []);
+
+          if (data.info_hash && mode === "file") {
+            $("selectedTorrentHashBadge").textContent = `Hash: ${data.info_hash.slice(0, 8)}...`;
+          }
+
+          if (data.cleaned_query) {
+            if (!$("plexTitle").value) $("plexTitle").value = data.cleaned_query;
+            if (!$("titleFromTmdb").value) $("titleFromTmdb").value = data.cleaned_query;
+          }
+
+          if (data.season_info) {
+            if (data.season_info.season) $("season").value = data.season_info.season;
+            if (data.season_info.episode) $("episode").value = data.season_info.episode;
+            if (data.season_info.start_episode) $("startEpisode").value = data.season_info.start_episode;
+          }
+          Toast.success("Анализ завершен");
+        }
+      } catch (err) {
+        // apiRequest already toasted
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = origText;
+      }
+    }
+
+    function renderTmdbResults(items) {
+      State.tmdbResults = items;
+      const grid = $("postersGrid");
+      $("tmdbCountBadge").textContent = `${items.length} результатов`;
+
+      if (!items || !items.length) {
+        grid.innerHTML = `
+          <div style="grid-column: 1/-1; text-align: center; color: var(--muted); padding: 40px 20px;">
+            Ничего не найдено. Попробуйте уточнить поисковый запрос в поле "Ручной поиск TMDB".
+          </div>`;
+        return;
+      }
+
+      grid.innerHTML = items.map((item, idx) => {
+        const rating = item.vote_average ? Number(item.vote_average).toFixed(1) : "—";
+        const year = item.year || "—";
+        const title = escapeHtml(item.title || "Без названия");
+
+        return `
+          <div class="poster-card" data-index="${idx}" onclick="selectTmdbCard(${idx})">
+            <div class="poster-media">
+              ${item.poster_url 
+                ? `<img class="poster-img" src="${escapeHtml(item.poster_url)}" alt="${title}" loading="lazy">`
+                : `<div class="poster-placeholder">${title}</div>`}
+            </div>
+            <div class="poster-body">
+              <div class="poster-title" title="${title}">${title}</div>
+              <div class="poster-meta">
+                <span>${escapeHtml(year)}</span>
+                <span class="poster-rating">★ ${rating}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function selectTmdbCard(index) {
+      const item = State.tmdbResults[index];
+      if (!item) return;
+
+      document.querySelectorAll(".poster-card").forEach((card, idx) => {
+        card.classList.toggle("selected", idx === index);
+      });
+
+      State.selectedTmdbItem = item;
+      $("titleFromTmdb").value = item.title || "";
+      $("plexTitle").value = item.title || "";
+      $("year").value = item.year || "";
+
+      Toast.info(`Выбрано: ${item.title}`);
+    }
+
+    /* ==========================================================================
+       ADD TORRENT (FULL OR SELECTIVE)
+       ========================================================================== */
+    async function handleAddTorrent(selective = false) {
+      const mode = State.addMode;
+      const magnet = $("magnetInput").value.trim();
+      const file = State.selectedTorrentFile;
+
+      if (mode === "magnet" && !magnet) {
+        Toast.error("Введите magnet-ссылку");
+        return;
+      }
+      if (mode === "file" && !file) {
+        Toast.error("Загрузите .torrent файл");
+        return;
+      }
+
+      const title = $("titleFromTmdb").value.trim() || $("plexTitle").value.trim();
+      const plexTitle = $("plexTitle").value.trim() || title;
+
+      if (!title && !plexTitle) {
+        Toast.error("Укажите название релиза или выберите карточку TMDB");
+        return;
+      }
+
+      const endpoint = selective ? "/api/add-selective" : "/api/add";
+      const btn = selective ? $("btnAddSelective") : $("btnAddFull");
+      const origText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `<span>⏳ Отправка...</span>`;
+
+      try {
+        const formData = new FormData();
+        if (mode === "file" && file) {
+          formData.append("torrent_file", file);
+        } else {
+          formData.append("magnet", magnet);
+        }
+
+        formData.append("media_type", $("mediaType").value);
+        formData.append("title", title);
+        formData.append("plex_title", plexTitle);
+        formData.append("year", $("year").value.trim());
+        formData.append("season", Number($("season").value) || 1);
+        formData.append("episode", Number($("episode").value) || 1);
+        formData.append("start_episode", Number($("startEpisode").value) || 1);
+        formData.append("episode_title", $("episodeTitle").value.trim());
+        formData.append("season_pack", $("seasonPack").checked);
+
+        await apiRequest(endpoint, { method: "POST", body: formData });
+        Toast.success(selective 
+          ? "Релиз добавлен в режиме паузы (ожидание метаданных для выбора файлов)" 
+          : "Релиз успешно добавлен в qBittorrent и очередь автоимпорта!");
+
+        resetAddForm();
+        switchTab("tab-jobs");
+      } catch (err) {
+        // Toast already handled
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = origText;
+      }
+    }
+
+    /* ==========================================================================
+       JOBS MANAGEMENT (TAB 2)
+       ========================================================================== */
+    async function fetchJobs(notify = false) {
+      try {
+        const data = await apiRequest("/api/jobs", {}, true);
+        if (data.status === "ok") {
+          State.jobs = data.items || [];
+          renderJobs();
+          updateMuxJobsList();
+          if (notify) Toast.success("Список задач обновлен");
+        }
+      } catch (err) {}
+    }
+
+    function filterJobs(status) {
+      State.filterJobsStatus = status;
+      document.querySelectorAll("#jobsFilterBar .filter-btn").forEach(b => {
+        b.classList.toggle("active", b.dataset.filter === status);
+      });
+      renderJobs();
+    }
+
+    function renderJobs() {
+      const root = $("jobsListContainer");
+      const countEl = $("navJobsCount");
+      const allJobs = State.jobs;
+      if (countEl) countEl.textContent = allJobs.length;
+
+      let filtered = allJobs;
+      if (State.filterJobsStatus !== "all") {
+        filtered = allJobs.filter(j => j.status === State.filterJobsStatus);
+      }
+
+      if (!filtered.length) {
+        root.innerHTML = `
+          <div style="text-align: center; color: var(--muted); padding: 40px;">
+            ${allJobs.length ? "Нет задач с выбранным статусом." : "Очередь задач пуста."}
+          </div>`;
+        return;
+      }
+
+      const statusBadges = {
+        waiting: { class: "badge-info", label: "⏳ Ожидание" },
+        waiting_files: { class: "badge-warn", label: "🎯 Выбор файлов" },
+        queued_space: { class: "badge-warn", label: "💾 Ждет свободного места" },
+        staging: { class: "badge-info", label: "📂 Подготовка (Staging)" },
+        importing: { class: "badge-info", label: "🚀 Импорт в медиатеку" },
+        imported: { class: "badge-ok", label: "✅ Завершено" },
+        error: { class: "badge-err", label: "❌ Ошибка" },
+        needs_mux: { class: "badge-purple", label: "🎛️ Mux Studio (Выбор дорожек)" },
+        muxing: { class: "badge-info", label: "⚙️ Идет склейка mkvmerge" },
+        mux_review: { class: "badge-ok", label: "🔍 Проверка Result" }
+      };
+
+      root.innerHTML = filtered.map(job => {
+        const badge = statusBadges[job.status] || { class: "badge", label: job.status };
+        const title = escapeHtml(job.plex_title || job.title);
+        const hashSnippet = (job.torrent_hash || "").slice(0, 8);
+
+        return `
+          <div class="job-card" data-job-id="${job.id}">
+            <div class="job-header">
+              <div>
+                <div class="job-title">${title}</div>
+                <div class="job-meta-row">
+                  <span class="badge ${badge.class}">${badge.label}</span>
+                  <span>Категория: ${escapeHtml(job.media_type || "")}</span>
+                  ${job.year ? `<span>Год: ${escapeHtml(job.year)}</span>` : ""}
+                  <span>Hash: <code>${hashSnippet}</code></span>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 8px;">
+                ${job.status === "needs_mux" || job.status === "mux_review" || job.status === "muxing"
+                  ? `<button class="btn btn-sm" onclick="openJobInMuxStudio(${job.id})">🎛️ Mux Studio</button>`
+                  : ""}
+                <button class="btn-secondary btn-sm" onclick="handleDeleteJob(${job.id})">Удалить</button>
+              </div>
+            </div>
+
+            ${job.error ? `<div style="color: var(--danger); font-size: 12px; margin-bottom: 8px;">${escapeHtml(job.error)}</div>` : ""}
+
+            ${renderJobContextControls(job)}
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderJobContextControls(job) {
+      if (job.status === "waiting_files") {
+        const draft = State.fileDrafts[String(job.id)];
+        const files = draft?.files || [];
+
+        if (!files.length) {
+          loadTorrentFilesForJob(job.id, job.torrent_hash);
+          return `
+            <div class="job-subbox">
+              <div class="job-subbox-title">
+                <span>Выбор файлов из раздачи</span>
+                <button class="btn-secondary btn-sm" onclick="loadTorrentFilesForJob(${job.id}, '${escapeHtml(job.torrent_hash)}', true)">
+                  🔄 Обновить список
+                </button>
+              </div>
+              <div style="font-size: 12px; color: var(--muted);">
+                Ожидание загрузки метаданных от qBittorrent...
+              </div>
+            </div>`;
+        }
+
+        const rows = files.map(f => {
+          const isChecked = draft.selectedIds?.includes(f.index);
+          return `
+            <div class="file-select-item">
+              <input type="checkbox" class="job-file-chk" data-job-id="${job.id}" data-file-idx="${f.index}" ${isChecked ? "checked" : ""}>
+              <div class="file-info-col">
+                <div class="file-name-text">${escapeHtml(f.name)}</div>
+                <div class="file-details-text">${f.size_text || formatBytes(f.size)} &bull; Прогресс: ${f.progress}%</div>
+              </div>
+            </div>
+          `;
+        }).join("");
+
+        return `
+          <div class="job-subbox">
+            <div class="job-subbox-title">
+              <span>Выбор файлов для загрузки (найдено ${files.length})</span>
+              <div style="display: flex; gap: 6px;">
+                <button class="btn-secondary btn-sm" onclick="toggleAllJobFiles(${job.id}, true)">Выбрать все</button>
+                <button class="btn-secondary btn-sm" onclick="toggleAllJobFiles(${job.id}, false)">Снять все</button>
+              </div>
+            </div>
+            <div style="max-height: 260px; overflow-y: auto; padding-right: 4px; margin-bottom: 12px;">
+              ${rows}
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 8px;">
+              <button class="btn btn-success btn-sm" onclick="submitSelectedFilesForJob(${job.id})">
+                💾 Скачать выбранные файлы
+              </button>
+            </div>
+          </div>
+        `;
+      }
+
+      if (job.status === "mux_review") {
+        return `
+          <div class="job-subbox">
+            <div class="job-subbox-title">
+              <span>Релиз собран в папку Result</span>
+              <button class="btn btn-success btn-sm" onclick="confirmMuxImport(${job.id})">
+                ✅ Подтвердить и перенести в медиатеку
+              </button>
+            </div>
+            <div style="font-family: monospace; font-size: 11px; color: var(--muted); word-break: break-all;">
+              ${escapeHtml(job.mux_result_path || "")}
+            </div>
+          </div>
+        `;
+      }
+
+      return "";
+    }
+
+    async function loadTorrentFilesForJob(jobId, torrentHash, notify = false) {
+      if (!torrentHash) return;
+      try {
+        const data = await apiRequest(`/api/torrents/${torrentHash}/files`, {}, !notify);
+        if (data.status === "ok" && data.files && data.files.length) {
+          const existing = State.fileDrafts[String(jobId)];
+          State.fileDrafts[String(jobId)] = {
+            files: data.files,
+            selectedIds: existing ? existing.selectedIds : data.files.map(f => f.index)
+          };
+          renderJobs();
+          if (notify) Toast.success("Файлы получены");
+        }
+      } catch (err) {}
+    }
+
+    function toggleAllJobFiles(jobId, select) {
+      const draft = State.fileDrafts[String(jobId)];
+      if (draft && draft.files) {
+        draft.selectedIds = select ? draft.files.map(f => f.index) : [];
+        renderJobs();
+      }
+    }
+
+    async function submitSelectedFilesForJob(jobId) {
+      const draft = State.fileDrafts[String(jobId)];
+      const selected = draft?.selectedIds || [];
+      if (!selected.length) {
+        Toast.warn("Отметьте хотя бы один файл для скачивания");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("selected_file_ids_json", JSON.stringify(selected));
+
+      await apiRequest(`/api/jobs/${jobId}/select-files`, { method: "POST", body: formData });
+      Toast.success("Выбор зафиксирован, загрузка запущена");
+      delete State.fileDrafts[String(jobId)];
+      fetchJobs();
+    }
+
+    async function handleDeleteJob(jobId) {
+      if (!confirm("Удалить задачу автоимпорта?")) return;
+      await apiRequest(`/api/jobs/${jobId}`, { method: "DELETE" });
+      Toast.success("Задача удалена");
+      fetchJobs();
+    }
+
+    /* ==========================================================================
+       TAB 3: MUX STUDIO (INTERACTIVE TRACKS, SUBTITLES & REORDERING)
+       ========================================================================== */
+    function updateMuxJobsList() {
+      const muxJobs = State.jobs.filter(j => 
+        j.status === "needs_mux" || j.status === "mux_review" || j.status === "muxing"
+      );
+
+      const badge = $("navMuxCount");
+      if (badge) badge.textContent = muxJobs.length;
+
+      const container = $("muxJobsList");
+      if (!container) return;
+
+      if (!muxJobs.length) {
+        container.innerHTML = `
+          <div style="color: var(--muted); font-size: 13px; text-align: center; padding: 20px;">
+            Нет релизов, требующих склейки.
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = muxJobs.map(job => {
+        const isSelected = job.id === State.activeMuxJobId;
+        const statusMap = {
+          needs_mux: { class: "badge-purple", text: "Выбор дорожек" },
+          muxing: { class: "badge-info", text: "Склейка..." },
+          mux_review: { class: "badge-ok", text: "Проверка Result" }
+        };
+        const s = statusMap[job.status] || { class: "badge", text: job.status };
+
+        return `
+          <div class="mux-job-item ${isSelected ? "selected" : ""}" onclick="openJobInMuxStudio(${job.id})">
+            <div style="font-weight: 700; font-size: 13px; color: var(--text-bright); margin-bottom: 4px;">
+              ${escapeHtml(job.plex_title || job.title)}
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="badge ${s.class}">${s.text}</span>
+              <span style="font-size: 11px; color: var(--muted);">${escapeHtml(job.media_type || "")}</span>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      // Auto-select first job if none selected
+      if (!State.activeMuxJobId && muxJobs.length) {
+        openJobInMuxStudio(muxJobs[0].id);
+      }
+    }
+
+    async function openJobInMuxStudio(jobId) {
+      State.activeMuxJobId = jobId;
+      updateMuxJobsList();
+      switchTab("tab-mux");
+
+      const job = State.jobs.find(j => j.id === jobId);
+      if (!job) return;
+
+      $("muxEmptyPlaceholder").style.display = "none";
+      $("muxActiveWorkspace").style.display = "block";
+
+      $("muxReleaseTitle").textContent = job.plex_title || job.title;
+      $("muxReleaseSubtitle").textContent = `ID: #${job.id} • ${job.media_type} • Сезон: ${job.season || 1} • Папка: ${job.staging_path || "—"}`;
+      $("muxStatusBadge").textContent = job.status;
+
+      // Check if job is in review
+      $("muxReviewNotice").style.display = job.status === "mux_review" ? "block" : "none";
+      $("muxResultPath").textContent = `Каталог Result: ${job.mux_result_path || ""}`;
+      $("btnConfirmMux").style.display = job.status === "mux_review" ? "inline-flex" : "none";
+      $("btnStartMux").style.display = job.status === "needs_mux" ? "inline-flex" : "none";
+
+      // Check if job is actively muxing
+      $("muxProgressBox").style.display = job.status === "muxing" ? "block" : "none";
+
+      // Load track schema
+      try {
+        const data = await apiRequest(`/api/jobs/${jobId}/tracks`);
+        if (data.status === "ok") {
+          initMuxDraftState(jobId, data);
+          renderMuxTracks(jobId);
+        }
+      } catch (err) {}
+    }
+
+    function initMuxDraftState(jobId, data) {
+      if (State.muxTrackDrafts[jobId]) return;
+
+      const internal = data.internal_tracks || {};
+      const external = data.external_tracks || {};
+
+      const draft = {
+        internalAudio: (internal.audio_tracks || []).map(t => ({
+          ...t,
+          keep: true,
+          isDefault: Boolean(t.default_track)
+        })),
+        internalSubs: (internal.subtitle_tracks || []).map(t => ({
+          ...t,
+          keep: true,
+          isDefault: Boolean(t.default_track),
+          isForced: Boolean(t.forced_track)
+        })),
+        externalAudio: (external.audio_groups || []).map(g => ({
+          ...g,
+          selected: true,
+          customName: g.name || "RUS Dub",
+          language: "rus",
+          delayMs: 0,
+          isDefault: false
+        })),
+        externalSubs: (external.subtitle_groups || []).map(g => ({
+          ...g,
+          selected: true,
+          customName: g.name || "RUS Sub",
+          language: "rus",
+          delayMs: 0,
+          isDefault: false,
+          isForced: false
+        }))
+      };
+
+      State.muxTrackDrafts[jobId] = draft;
+    }
+
+    function renderMuxTracks(jobId) {
+      const draft = State.muxTrackDrafts[jobId];
+      if (!draft) return;
+
+      // 1. Render Internal Tracks
+      const internalContainer = $("internalTracksContainer");
+      let internalHtml = "";
+
+      if (!draft.internalAudio.length && !draft.internalSubs.length) {
+        internalHtml = `<div style="color: var(--muted); font-size: 12px;">Внутренние аудио и субтитры не обнаружены.</div>`;
+      } else {
+        draft.internalAudio.forEach((t, i) => {
+          internalHtml += `
+            <div class="track-row-item ${t.keep ? "" : "excluded"}">
+              <div class="track-drag-handle">
+                <button class="reorder-btn" title="Поднять дорожку" onclick="moveTrack(${jobId}, 'internalAudio', ${i}, -1)">▲</button>
+                <button class="reorder-btn" title="Опустить дорожку" onclick="moveTrack(${jobId}, 'internalAudio', ${i}, 1)">▼</button>
+              </div>
+              <div class="track-details">
+                <div class="track-title-row">
+                  <span class="badge badge-purple">Audio #${t.id}</span>
+                  <span class="track-main-name">${escapeHtml(t.name || "Track " + t.id)}</span>
+                  <span class="badge">${t.codec || "audio"}</span>
+                  <span class="badge">${t.channel_layout || t.channels + " ch"}</span>
+                  <span class="badge">${t.language || "und"}</span>
+                </div>
+              </div>
+              <div class="track-controls-col">
+                <label class="checkbox-row" style="margin: 0;">
+                  <input type="checkbox" ${t.keep ? "checked" : ""} onchange="updateTrackFlag(${jobId}, 'internalAudio', ${i}, 'keep', this.checked)">
+                  <span>Оставить</span>
+                </label>
+                <label class="checkbox-row" style="margin: 0;">
+                  <input type="radio" name="defaultAudio" ${t.isDefault ? "checked" : ""} onchange="setDefaultAudio(${jobId}, 'internal', ${i})">
+                  <span>По умолчанию</span>
+                </label>
+              </div>
+            </div>
+          `;
+        });
+
+        draft.internalSubs.forEach((t, i) => {
+          internalHtml += `
+            <div class="track-row-item ${t.keep ? "" : "excluded"}">
+              <div class="track-drag-handle">
+                <button class="reorder-btn" title="Поднять дорожку" onclick="moveTrack(${jobId}, 'internalSubs', ${i}, -1)">▲</button>
+                <button class="reorder-btn" title="Опустить дорожку" onclick="moveTrack(${jobId}, 'internalSubs', ${i}, 1)">▼</button>
+              </div>
+              <div class="track-details">
+                <div class="track-title-row">
+                  <span class="badge badge-info">Sub #${t.id}</span>
+                  <span class="track-main-name">${escapeHtml(t.name || "Subtitle " + t.id)}</span>
+                  <span class="badge">${t.codec || "sub"}</span>
+                  <span class="badge">${t.language || "und"}</span>
+                </div>
+              </div>
+              <div class="track-controls-col">
+                <label class="checkbox-row" style="margin: 0;">
+                  <input type="checkbox" ${t.keep ? "checked" : ""} onchange="updateTrackFlag(${jobId}, 'internalSubs', ${i}, 'keep', this.checked)">
+                  <span>Оставить</span>
+                </label>
+                <label class="checkbox-row" style="margin: 0;">
+                  <input type="radio" name="defaultSub" ${t.isDefault ? "checked" : ""} onchange="setDefaultSub(${jobId}, 'internal', ${i})">
+                  <span>По умолчанию</span>
+                </label>
+                <label class="checkbox-row" style="margin: 0;">
+                  <input type="checkbox" ${t.isForced ? "checked" : ""} onchange="updateTrackFlag(${jobId}, 'internalSubs', ${i}, 'isForced', this.checked)">
+                  <span>Forced</span>
+                </label>
+              </div>
+            </div>
+          `;
+        });
+      }
+      internalContainer.innerHTML = internalHtml;
+
+      // 2. Render External Tracks
+      const externalContainer = $("externalTracksContainer");
+      let externalHtml = "";
+
+      if (!draft.externalAudio.length && !draft.externalSubs.length) {
+        externalHtml = `<div style="color: var(--muted); font-size: 12px;">Внешние файлы дорожек в релизе не найдены.</div>`;
+      } else {
+        draft.externalAudio.forEach((g, i) => {
+          externalHtml += `
+            <div class="track-row-item ${g.selected ? "" : "excluded"}">
+              <div class="track-drag-handle">
+                <button class="reorder-btn" title="Поднять дорожку" onclick="moveTrack(${jobId}, 'externalAudio', ${i}, -1)">▲</button>
+                <button class="reorder-btn" title="Опустить дорожку" onclick="moveTrack(${jobId}, 'externalAudio', ${i}, 1)">▼</button>
+              </div>
+              <div class="track-details">
+                <div class="track-title-row">
+                  <span class="badge badge-ok">Внешнее Аудио</span>
+                  <span class="track-main-name">${escapeHtml(g.name || "External Audio")} (${g.file_count || 1} ф.)</span>
+                </div>
+                <div style="display: flex; gap: 8px; margin-top: 6px; align-items: center; flex-wrap: wrap;">
+                  <input type="text" style="max-width: 180px; margin: 0; padding: 6px 10px; font-size: 12px;" 
+                    value="${escapeHtml(g.customName)}" placeholder="Имя дорожки" 
+                    oninput="updateTrackProp(${jobId}, 'externalAudio', ${i}, 'customName', this.value)">
+                  <select style="max-width: 140px; margin: 0; padding: 6px 10px; font-size: 12px;"
+                    onchange="updateTrackProp(${jobId}, 'externalAudio', ${i}, 'language', this.value)">
+                    <option value="rus" ${g.language === "rus" ? "selected" : ""}>Русский (rus)</option>
+                    <option value="eng" ${g.language === "eng" ? "selected" : ""}>English (eng)</option>
+                    <option value="ukr" ${g.language === "ukr" ? "selected" : ""}>Українська (ukr)</option>
+                    <option value="jpn" ${g.language === "jpn" ? "selected" : ""}>日本語 (jpn)</option>
+                    <option value="ger" ${g.language === "ger" ? "selected" : ""}>Deutsch (ger)</option>
+                    <option value="fre" ${g.language === "fre" ? "selected" : ""}>Français (fre)</option>
+                    <option value="und" ${g.language === "und" ? "selected" : ""}>Другой (und)</option>
+                  </select>
+                  <input type="number" style="max-width: 100px; margin: 0; padding: 6px 10px; font-size: 12px;" 
+                    value="${g.delayMs || 0}" placeholder="Delay ms" title="Задержка звука (--sync) в мс"
+                    oninput="updateTrackProp(${jobId}, 'externalAudio', ${i}, 'delayMs', Number(this.value))">
+                  <span style="font-size: 11px; color: var(--muted);">ms</span>
+                </div>
+              </div>
+              <div class="track-controls-col">
+                <label class="checkbox-row" style="margin: 0;">
+                  <input type="checkbox" ${g.selected ? "checked" : ""} onchange="updateTrackFlag(${jobId}, 'externalAudio', ${i}, 'selected', this.checked)">
+                  <span>Включить</span>
+                </label>
+                <label class="checkbox-row" style="margin: 0;">
+                  <input type="radio" name="defaultAudio" ${g.isDefault ? "checked" : ""} onchange="setDefaultAudio(${jobId}, 'external', ${i})">
+                  <span>По умолчанию</span>
+                </label>
+              </div>
+            </div>
+          `;
+        });
+
+        draft.externalSubs.forEach((g, i) => {
+          externalHtml += `
+            <div class="track-row-item ${g.selected ? "" : "excluded"}">
+              <div class="track-drag-handle">
+                <button class="reorder-btn" title="Поднять дорожку" onclick="moveTrack(${jobId}, 'externalSubs', ${i}, -1)">▲</button>
+                <button class="reorder-btn" title="Опустить дорожку" onclick="moveTrack(${jobId}, 'externalSubs', ${i}, 1)">▼</button>
+              </div>
+              <div class="track-details">
+                <div class="track-title-row">
+                  <span class="badge badge-info">Внешние Субтитры</span>
+                  <span class="track-main-name">${escapeHtml(g.name || "External Subtitles")} (${g.file_count || 1} ф.)</span>
+                </div>
+                <div style="display: flex; gap: 8px; margin-top: 6px; align-items: center; flex-wrap: wrap;">
+                  <input type="text" style="max-width: 180px; margin: 0; padding: 6px 10px; font-size: 12px;" 
+                    value="${escapeHtml(g.customName)}" placeholder="Имя дорожки" 
+                    oninput="updateTrackProp(${jobId}, 'externalSubs', ${i}, 'customName', this.value)">
+                  <select style="max-width: 140px; margin: 0; padding: 6px 10px; font-size: 12px;"
+                    onchange="updateTrackProp(${jobId}, 'externalSubs', ${i}, 'language', this.value)">
+                    <option value="rus" ${g.language === "rus" ? "selected" : ""}>Русский (rus)</option>
+                    <option value="eng" ${g.language === "eng" ? "selected" : ""}>English (eng)</option>
+                    <option value="ukr" ${g.language === "ukr" ? "selected" : ""}>Українська (ukr)</option>
+                    <option value="jpn" ${g.language === "jpn" ? "selected" : ""}>日本語 (jpn)</option>
+                    <option value="und" ${g.language === "und" ? "selected" : ""}>Другой (und)</option>
+                  </select>
+                  <input type="number" style="max-width: 100px; margin: 0; padding: 6px 10px; font-size: 12px;" 
+                    value="${g.delayMs || 0}" placeholder="Delay ms" title="Смещение субтитров (--sync) в мс"
+                    oninput="updateTrackProp(${jobId}, 'externalSubs', ${i}, 'delayMs', Number(this.value))">
+                  <span style="font-size: 11px; color: var(--muted);">ms</span>
+                </div>
+              </div>
+              <div class="track-controls-col">
+                <label class="checkbox-row" style="margin: 0;">
+                  <input type="checkbox" ${g.selected ? "checked" : ""} onchange="updateTrackFlag(${jobId}, 'externalSubs', ${i}, 'selected', this.checked)">
+                  <span>Включить</span>
+                </label>
+                <label class="checkbox-row" style="margin: 0;">
+                  <input type="radio" name="defaultSub" ${g.isDefault ? "checked" : ""} onchange="setDefaultSub(${jobId}, 'external', ${i})">
+                  <span>По умолчанию</span>
+                </label>
+                <label class="checkbox-row" style="margin: 0;">
+                  <input type="checkbox" ${g.isForced ? "checked" : ""} onchange="updateTrackFlag(${jobId}, 'externalSubs', ${i}, 'isForced', this.checked)">
+                  <span>Forced</span>
+                </label>
+              </div>
+            </div>
+          `;
+        });
+      }
+      externalContainer.innerHTML = externalHtml;
+    }
+
+    function moveTrack(jobId, arrayKey, index, delta) {
+      const draft = State.muxTrackDrafts[jobId];
+      if (!draft || !draft[arrayKey]) return;
+      const arr = draft[arrayKey];
+      const newIndex = index + delta;
+      if (newIndex < 0 || newIndex >= arr.length) return;
+      const [item] = arr.splice(index, 1);
+      arr.splice(newIndex, 0, item);
+      renderMuxTracks(jobId);
+    }
+
+    function updateTrackFlag(jobId, arrayKey, index, propKey, value) {
+      const draft = State.muxTrackDrafts[jobId];
+      if (draft && draft[arrayKey] && draft[arrayKey][index]) {
+        draft[arrayKey][index][propKey] = value;
+        renderMuxTracks(jobId);
+      }
+    }
+
+    function updateTrackProp(jobId, arrayKey, index, propKey, value) {
+      const draft = State.muxTrackDrafts[jobId];
+      if (draft && draft[arrayKey] && draft[arrayKey][index]) {
+        draft[arrayKey][index][propKey] = value;
+      }
+    }
+
+    function setDefaultAudio(jobId, sourceKind, index) {
+      const draft = State.muxTrackDrafts[jobId];
+      if (!draft) return;
+      draft.internalAudio.forEach((t, i) => t.isDefault = (sourceKind === 'internal' && i === index));
+      draft.externalAudio.forEach((g, i) => g.isDefault = (sourceKind === 'external' && i === index));
+      renderMuxTracks(jobId);
+    }
+
+    function setDefaultSub(jobId, sourceKind, index) {
+      const draft = State.muxTrackDrafts[jobId];
+      if (!draft) return;
+      draft.internalSubs.forEach((t, i) => t.isDefault = (sourceKind === 'internal' && i === index));
+      draft.externalSubs.forEach((g, i) => g.isDefault = (sourceKind === 'external' && i === index));
+      renderMuxTracks(jobId);
+    }
+
+    async function handleStartMux() {
+      const jobId = State.activeMuxJobId;
+      if (!jobId) return;
+      const draft = State.muxTrackDrafts[jobId];
+      if (!draft) return;
+
+      const payload = {
+        keep_internal_audio_ids: draft.internalAudio.filter(t => t.keep).map(t => t.id),
+        keep_internal_subtitle_ids: draft.internalSubs.filter(t => t.keep).map(t => t.id),
+        audio: draft.externalAudio.filter(g => g.selected).map(g => ({
+          group_id: g.id,
+          track_name: g.customName || "RUS Dub",
+          language: g.language || "rus",
+          is_default: Boolean(g.isDefault),
+          sync_ms: g.delayMs || 0
+        })),
+        subtitles: draft.externalSubs.filter(g => g.selected).map(g => ({
+          group_id: g.id,
+          track_name: g.customName || "RUS Sub",
+          language: g.language || "rus",
+          is_default: Boolean(g.isDefault),
+          is_forced: Boolean(g.isForced),
+          sync_ms: g.delayMs || 0
+        }))
+      };
+
+      // Set default track specs
+      const defAudioInt = draft.internalAudio.findIndex(t => t.isDefault && t.keep);
+      if (defAudioInt >= 0) {
+        payload.default_audio_track_spec = [0, draft.internalAudio[defAudioInt].id];
+      }
+
+      const defSubInt = draft.internalSubs.findIndex(t => t.isDefault && t.keep);
+      if (defSubInt >= 0) {
+        payload.default_subtitle_track_spec = [0, draft.internalSubs[defSubInt].id];
+      }
+
+      // Compute track ordering
+      const trackOrder = ["0:0"];
+      draft.internalAudio.forEach(t => {
+        if (t.keep) trackOrder.push(`0:${t.id}`);
+      });
+
+      let extSourceIdx = 1;
+      draft.externalAudio.forEach(g => {
+        if (g.selected) {
+          trackOrder.push(`${extSourceIdx}:0`);
+          extSourceIdx++;
+        }
+      });
+
+      draft.internalSubs.forEach(t => {
+        if (t.keep) trackOrder.push(`0:${t.id}`);
+      });
+
+      draft.externalSubs.forEach(g => {
+        if (g.selected) {
+          trackOrder.push(`${extSourceIdx}:0`);
+          extSourceIdx++;
+        }
+      });
+
+      payload.track_order = trackOrder;
+
+      const formData = new FormData();
+      formData.append("selected_tracks_json", JSON.stringify(payload));
+
+      await apiRequest(`/api/jobs/${jobId}/start-mux`, { method: "POST", body: formData });
+      Toast.success("Склейка mkvmerge запущена в фоне");
+
+      $("muxProgressBox").style.display = "block";
+      $("btnStartMux").style.display = "none";
+      fetchJobs();
+    }
+
+    async function handleSkipMux() {
+      const jobId = State.activeMuxJobId;
+      if (!jobId) return;
+      if (!confirm("Оставить исходные файлы без склейки дорожек и перенести в библиотеку?")) return;
+
+      await apiRequest(`/api/jobs/${jobId}/skip-mux`, { method: "POST" });
+      Toast.success("Релиз импортирован без склейки");
+      fetchJobs();
+      switchTab("tab-jobs");
+    }
+
+    async function handleConfirmMux() {
+      const jobId = State.activeMuxJobId;
+      if (!jobId) return;
+      confirmMuxImport(jobId);
+    }
+
+    async function confirmMuxImport(jobId) {
+      if (!confirm("Импортировать результат склейки в библиотеку?")) return;
+      await apiRequest(`/api/jobs/${jobId}/confirm-mux`, { method: "POST" });
+      Toast.success("Релиз перенесен в медиатеку!");
+      fetchJobs();
+      switchTab("tab-jobs");
+    }
+
+    /* ==========================================================================
+       TORRENTS MANAGEMENT (TAB 4)
+       ========================================================================== */
+    async function fetchTorrents(notify = false) {
+      try {
+        const data = await apiRequest("/api/torrents", {}, true);
+        if (data.status === "ok") {
+          State.torrents = data.items || [];
+          renderTorrents();
+          if (notify) Toast.success("Раздачи обновлены");
+        }
+      } catch (err) {}
+    }
+
+    function renderTorrents() {
+      const root = $("torrentsListContainer");
+      const countEl = $("navTorrentsCount");
+      const items = State.torrents;
+      if (countEl) countEl.textContent = items.length;
+
+      if (!items.length) {
+        root.innerHTML = `<div style="text-align: center; color: var(--muted); padding: 40px;">Активных раздач нет.</div>`;
+        $("btnDeleteTorrent").style.display = "none";
+        return;
+      }
+
+      root.innerHTML = items.map(t => {
+        const isSelected = t.hash === State.selectedTorrentHash;
+        const progress = Math.min(Math.max(Number(t.progress || 0), 0), 100);
+        const speed = t.dlspeed ? `↓ ${formatBytes(t.dlspeed)}/s` : "";
+        const upspeed = t.upspeed ? `↑ ${formatBytes(t.upspeed)}/s` : "";
+
+        return `
+          <div class="torrent-card ${isSelected ? "selected" : ""}" onclick="selectTorrentCard('${escapeHtml(t.hash)}')">
+            <div class="torrent-title">${escapeHtml(t.name)}</div>
+            <div class="torrent-meta">
+              <span class="badge badge-purple">${escapeHtml(t.state || "unknown")}</span>
+              <span>${progress.toFixed(1)}%</span>
+              <span>${formatBytes(t.size)}</span>
+              ${speed ? `<span style="color: #6ee7b7;">${speed}</span>` : ""}
+              ${upspeed ? `<span style="color: #93c5fd;">${upspeed}</span>` : ""}
+              ${t.eta_text ? `<span>ETA: ${escapeHtml(t.eta_text)}</span>` : ""}
+              <span>Hash: <code>${(t.hash || "").slice(0, 8)}</code></span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" style="width: ${progress}%"></div>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      $("btnDeleteTorrent").style.display = State.selectedTorrentHash ? "inline-flex" : "none";
+    }
+
+    function selectTorrentCard(hash) {
+      State.selectedTorrentHash = State.selectedTorrentHash === hash ? null : hash;
+      renderTorrents();
+    }
+
+    async function handleDeleteTorrent() {
+      if (!State.selectedTorrentHash) return;
+      const deleteFiles = confirm("Удалить также скачанные файлы с диска?\n[OK] — Да, удалить с диска\n[Отмена] — Только из торрент-клиента");
+      if (!confirm("Подтвердите удаление раздачи")) return;
+
+      await apiRequest(`/api/torrents/${State.selectedTorrentHash}?delete_files=${deleteFiles}`, { method: "DELETE" });
+      Toast.success("Раздача удалена");
+      State.selectedTorrentHash = null;
+      fetchTorrents();
+    }
+
+    /* ==========================================================================
+       IMPORT HISTORY (TAB 5)
+       ========================================================================== */
+    async function fetchHistory(notify = false) {
+      try {
+        const data = await apiRequest("/api/history?limit=100", {}, true);
+        if (data.status === "ok") {
+          State.history = data.items || [];
+          renderHistory();
+          if (notify) Toast.success("История обновлена");
+        }
+      } catch (err) {}
+    }
+
+    function renderHistory() {
+      const tbody = $("historyTableBody");
+      const items = State.history;
+
+      if (!items.length) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align: center; color: var(--muted); padding: 30px;">
+              История импортов пуста.
+            </td>
+          </tr>`;
+        return;
+      }
+
+      tbody.innerHTML = items.map(h => {
+        const title = escapeHtml(h.plex_title || h.title || "—");
+        const date = h.imported_at ? new Date(h.imported_at).toLocaleString() : "—";
+        const mode = h.details?.mode || "normal";
+        const modeBadges = {
+          confirm_mux: '<span class="badge badge-purple">Muxed</span>',
+          skip_mux: '<span class="badge badge-info">Skip Mux</span>',
+          normal: '<span class="badge badge-ok">Normal</span>'
+        };
+
+        const seasonText = h.media_type === "tv" || h.media_type === "anime"
+          ? `S${String(h.season || 1).padStart(2, "0")}E${String(h.episode || 1).padStart(2, "0")}`
+          : "—";
+
+        return `
+          <tr>
+            <td style="white-space: nowrap; font-variant-numeric: tabular-nums;">${date}</td>
+            <td style="font-weight: 700; color: var(--text-bright);">${title}</td>
+            <td><span class="badge">${escapeHtml(h.media_type || "")}</span></td>
+            <td>${seasonText}</td>
+            <td>${modeBadges[mode] || `<span class="badge">${escapeHtml(mode)}</span>`}</td>
+            <td><code style="font-size: 11px;">${(h.torrent_hash || "").slice(0, 8)}</code></td>
+            <td style="color: var(--muted); font-size: 11px;">
+              ${h.details?.result?.imported ? `Импортировано: ${h.details.result.imported} ф.` : "Готово"}
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    /* ==========================================================================
+       DISK USAGE STATS
+       ========================================================================== */
+    async function fetchDisk() {
+      try {
+        const data = await apiRequest("/api/disk", {}, true);
+        if (data.status === "ok") {
+          updateDiskDisplay(data);
+        }
+      } catch (err) {}
+    }
+
+    function updateDiskDisplay(d) {
+      if (!d) return;
+      State.disk = d;
+      $("hdrDiskFree").textContent = `${d.free_text || "—"} св.`;
+      $("hdrDiskTotal").textContent = `из ${d.total_text || "—"}`;
+      $("hdrDiskBar").style.width = `${Math.min(Math.max(Number(d.used_percent || 0), 0), 100)}%`;
+    }
+
+    /* ==========================================================================
+       SERVER-SENT EVENTS (SSE) /api/events REAL-TIME STREAM
+       ========================================================================== */
+    function initSSE() {
+      if (!window.EventSource) {
+        setInterval(fetchTorrents, 10000);
+        setInterval(fetchJobs, 10000);
+        setInterval(fetchDisk, 30000);
+        return;
+      }
+
+      if (State.sseEventSource) {
+        State.sseEventSource.close();
+      }
+
+      const sse = new EventSource("/api/events");
+      State.sseEventSource = sse;
+
+      sse.onopen = () => {
+        setRealtimeStatus("connected");
+      };
+
+      sse.onmessage = (e) => {
+        try {
+          const payload = JSON.parse(e.data);
+          if (payload.type === "tick") {
+            handleSSETick(payload);
+          }
+        } catch (err) {}
+      };
+
+      sse.onerror = () => {
+        setRealtimeStatus("reconnecting");
+      };
+    }
+
+    function setRealtimeStatus(status) {
+      const pill = $("realtimeStatus");
+      const txt = $("realtimeText");
+      if (!pill || !txt) return;
+
+      pill.className = `realtime-pill ${status === "reconnecting" ? "reconnecting" : status === "disconnected" ? "disconnected" : ""}`;
+      txt.textContent = status === "connected" ? "Realtime" : status === "reconnecting" ? "Переподключение" : "Офлайн";
+    }
+
+    function handleSSETick(tick) {
+      // 1. Disk
+      if (tick.disk) updateDiskDisplay(tick.disk);
+
+      // 2. Torrents
+      if (Array.isArray(tick.torrents)) {
+        State.torrents = tick.torrents;
+        $("qbitStatusPill").className = "qbit-pill";
+        $("qbitStatusPill").textContent = "qBit: Онлайн";
+
+        const countEl = $("navTorrentsCount");
+        if (countEl) countEl.textContent = tick.torrents.length;
+
+        if (State.currentTab === "tab-torrents" && !State.selectedTorrentHash) {
+          renderTorrents();
+        }
+      } else {
+        $("qbitStatusPill").className = "qbit-pill offline";
+        $("qbitStatusPill").textContent = "qBit: Офлайн";
+      }
+
+      // 3. Jobs
+      if (Array.isArray(tick.jobs)) {
+        State.jobs = tick.jobs;
+        const countEl = $("navJobsCount");
+        if (countEl) countEl.textContent = tick.jobs.length;
+
+        updateMuxJobsList();
+
+        if (State.currentTab === "tab-jobs") {
+          const isActivelySelecting = document.querySelector(".job-file-chk:focus");
+          if (!isActivelySelecting) {
+            renderJobs();
+          }
+        }
+      }
+
+      // 4. Active Muxing Progress & Status Sync
+      if (State.activeMuxJobId) {
+        const activeJob = State.jobs.find(j => j.id === State.activeMuxJobId);
+        if (activeJob) {
+          $("muxStatusBadge").textContent = activeJob.status;
+          $("muxReviewNotice").style.display = activeJob.status === "mux_review" ? "block" : "none";
+          $("btnConfirmMux").style.display = activeJob.status === "mux_review" ? "inline-flex" : "none";
+          $("btnStartMux").style.display = activeJob.status === "needs_mux" ? "inline-flex" : "none";
+        }
+
+        if (tick.active_mux && tick.active_mux[State.activeMuxJobId]) {
+          const prog = tick.active_mux[State.activeMuxJobId];
+          updateActiveMuxProgressUI(prog);
+        }
+      }
+    }
+
+    function updateActiveMuxProgressUI(prog) {
+      if (!prog) return;
+
+      const pBox = $("muxProgressBox");
+      if (pBox) pBox.style.display = prog.status === "muxing" ? "block" : "none";
+
+      const overall = Number(prog.overall_percent || 0).toFixed(1);
+      const curr = Number(prog.current_percent || 0).toFixed(1);
+
+      $("muxProgressPercent").textContent = `${overall}%`;
+      $("muxBarFill").style.width = `${overall}%`;
+
+      const fIdx = prog.current_file_index || 1;
+      const fTot = prog.total_files || 1;
+      $("muxProgressText").textContent = `Склейка контейнеров: ${overall}% (Файл ${fIdx} из ${fTot})`;
+      $("muxCurrentFileName").textContent = prog.current_file_name ? `Текущий: ${prog.current_file_name} (${curr}%)` : "";
+
+      if (prog.log && prog.log.length) {
+        const consoleEl = $("muxLogConsole");
+        consoleEl.textContent = prog.log.slice(-100).join("\n");
+        consoleEl.scrollTop = consoleEl.scrollHeight;
+      }
+
+      if (prog.status === "completed") {
+        fetchJobs();
+      }
+    }
+
+    /* ==========================================================================
+       EVENT DELEGATION & LISTENERS
+       ========================================================================== */
+    document.addEventListener("change", (e) => {
+      if (e.target.classList.contains("job-file-chk")) {
+        const jobId = e.target.dataset.jobId;
+        const fileIdx = Number(e.target.dataset.fileIdx);
+        const draft = State.fileDrafts[String(jobId)];
+        if (draft) {
+          if (!draft.selectedIds) draft.selectedIds = [];
+          if (e.target.checked) {
+            if (!draft.selectedIds.includes(fileIdx)) draft.selectedIds.push(fileIdx);
+          } else {
+            draft.selectedIds = draft.selectedIds.filter(id => id !== fileIdx);
+          }
+        }
+      }
+    });
+
+    /* ==========================================================================
+       INITIALIZATION
+       ========================================================================== */
+    document.addEventListener("DOMContentLoaded", () => {
+      setupDropzone();
+      onMediaTypeChange();
+
+      const initialTab = window.location.hash ? window.location.hash.replace("#", "") : "tab-add";
+      switchTab(initialTab);
+
+      fetchDisk();
+      fetchJobs();
+      fetchTorrents();
+
+      initSSE();
+    });
+  </script>
+</body>
+</html>
