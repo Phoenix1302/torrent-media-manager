@@ -7,9 +7,13 @@ TMDB_BASE = "https://api.themoviedb.org/3"
 TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w342"
 
 
-async def search_tmdb(query: str, media_type: str):
+async def search_tmdb(query: str, media_type: str) -> list[dict]:
     if not TMDB_API_KEY:
-        raise RuntimeError("TMDB_API_KEY is empty")
+        return []
+
+    clean_query = str(query).strip() if query else ""
+    if not clean_query:
+        return []
 
     if media_type == "movie":
         endpoint = "/search/movie"
@@ -18,15 +22,19 @@ async def search_tmdb(query: str, media_type: str):
 
     params = {
         "api_key": TMDB_API_KEY,
-        "query": query,
+        "query": clean_query,
         "language": "ru-RU",
         "include_adult": "false",
     }
 
-    async with httpx.AsyncClient(timeout=20) as client:
-        response = await client.get(TMDB_BASE + endpoint, params=params)
-        response.raise_for_status()
-        data = response.json()
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            response = await client.get(TMDB_BASE + endpoint, params=params)
+            if response.status_code != 200:
+                return []
+            data = response.json()
+    except Exception:
+        return []
 
     results = []
 

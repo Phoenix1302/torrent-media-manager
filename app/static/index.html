@@ -446,8 +446,13 @@
       letter-spacing: 0.05em;
     }
 
+    input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="submit"]):not([type="button"]):not([type="reset"]),
     input[type="text"],
     input[type="number"],
+    input[type="search"],
+    input[type="password"],
+    input[type="email"],
+    input,
     textarea,
     select {
       width: 100%;
@@ -461,6 +466,27 @@
       margin-bottom: 14px;
       transition: all 0.2s;
       font-family: inherit;
+    }
+
+    input:disabled,
+    input[readonly],
+    textarea[readonly],
+    select:disabled {
+      background: rgba(17, 24, 39, 0.6) !important;
+      color: var(--muted) !important;
+      border-color: rgba(255, 255, 255, 0.08) !important;
+      cursor: default;
+    }
+
+    /* Override browser autofill default white background */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover, 
+    input:-webkit-autofill:focus, 
+    input:-webkit-autofill:active {
+      -webkit-box-shadow: 0 0 0 1000px #0b0f19 inset !important;
+      -webkit-text-fill-color: #f8fafc !important;
+      caret-color: #f8fafc !important;
+      transition: background-color 5000s ease-in-out 0s;
     }
 
     textarea {
@@ -1566,16 +1592,16 @@
             </div>
 
             <label for="plexTitle">Название папки релиза</label>
-            <input id="plexTitle" placeholder="Пример: Cyberpunk: Edgerunners">
+            <input type="text" id="plexTitle" placeholder="Пример: Cyberpunk: Edgerunners">
 
             <div class="row">
               <div>
                 <label for="year">Год выпуска</label>
-                <input id="year" placeholder="2023">
+                <input type="text" id="year" placeholder="2023">
               </div>
               <div>
                 <label for="titleFromTmdb">TMDB Заголовок</label>
-                <input id="titleFromTmdb" placeholder="Автозаполнение" readonly style="opacity: 0.8;">
+                <input type="text" id="titleFromTmdb" placeholder="Автозаполнение" readonly style="opacity: 0.8;">
               </div>
             </div>
 
@@ -1597,7 +1623,7 @@
               </div>
 
               <label for="episodeTitle">Название эпизода (опционально)</label>
-              <input id="episodeTitle" placeholder="Необязательно для пакетных релизов">
+              <input type="text" id="episodeTitle" placeholder="Необязательно для пакетных релизов">
 
               <label class="checkbox-row">
                 <input id="seasonPack" type="checkbox" checked>
@@ -1852,7 +1878,7 @@
         <strong>Torrent Media Manager</strong>
         <span class="version-badge">v1.1.0</span>
         <span>&bull;</span>
-        <span>Podman Quadlet &bull; Host network: 192.168.1.135:8000</span>
+        <span>Podman Quadlet (Host mode) &bull; <span id="footerHostDisplay"></span></span>
       </div>
 
       <div class="footer-paths">
@@ -2149,15 +2175,17 @@
 
         const data = await apiRequest("/api/analyze", { method: "POST", body: formData });
         if (data.status === "ok") {
+          State.lastTmdbWarning = data.tmdb_warning || "";
           renderTmdbResults(data.results || []);
 
           if (data.info_hash && mode === "file") {
             $("selectedTorrentHashBadge").textContent = `Hash: ${data.info_hash.slice(0, 8)}...`;
           }
 
-          if (data.cleaned_query) {
-            if (!$("plexTitle").value) $("plexTitle").value = data.cleaned_query;
-            if (!$("titleFromTmdb").value) $("titleFromTmdb").value = data.cleaned_query;
+          const fallbackTitle = data.cleaned_query || data.raw_name || "";
+          if (fallbackTitle) {
+            if (!$("plexTitle").value) $("plexTitle").value = fallbackTitle;
+            if (!$("titleFromTmdb").value) $("titleFromTmdb").value = fallbackTitle;
           }
 
           if (data.season_info) {
@@ -2165,7 +2193,12 @@
             if (data.season_info.episode) $("episode").value = data.season_info.episode;
             if (data.season_info.start_episode) $("startEpisode").value = data.season_info.start_episode;
           }
-          Toast.success("Анализ завершен");
+
+          if (data.tmdb_warning) {
+            Toast.warn(data.tmdb_warning);
+          } else {
+            Toast.success("Анализ завершен");
+          }
         }
       } catch (err) {
         // apiRequest already toasted
@@ -2181,9 +2214,11 @@
       $("tmdbCountBadge").textContent = `${items.length} результатов`;
 
       if (!items || !items.length) {
+        const warningHtml = State.lastTmdbWarning ? `<div style="color: var(--warning); margin-bottom: 8px;">⚠️ ${escapeHtml(State.lastTmdbWarning)}</div>` : "";
         grid.innerHTML = `
           <div style="grid-column: 1/-1; text-align: center; color: var(--muted); padding: 40px 20px;">
-            Ничего не найдено. Попробуйте уточнить поисковый запрос в поле "Ручной поиск TMDB".
+            ${warningHtml}
+            <div>Ничего не найдено в TMDB. Вы можете ввести название папки релиза вручную в блоке ниже.</div>
           </div>`;
         return;
       }
@@ -3247,6 +3282,11 @@
        INITIALIZATION
        ========================================================================== */
     document.addEventListener("DOMContentLoaded", () => {
+      const footerHost = document.getElementById("footerHostDisplay");
+      if (footerHost) {
+        footerHost.textContent = window.location.host || "Host mode";
+      }
+
       setupDropzone();
       onMediaTypeChange();
 

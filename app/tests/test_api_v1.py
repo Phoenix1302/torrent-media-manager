@@ -297,6 +297,23 @@ def test_api_analyze_validation_errors():
     assert "Failed to parse .torrent file" in resp.json()["message"]
 
 
+def test_api_analyze_with_magnet_without_tmdb_key(monkeypatch):
+    import config
+    monkeypatch.setattr(config, "TMDB_API_KEY", "")
+
+    client = TestClient(main.app)
+    magnet = "magnet:?xt=urn:btih:1367D17301F00130830777D70295477DAA11B7C1&dn=Cyberpunk.Edgerunners.S01.1080p.NF.WEB-DL.DDP5.1.x264"
+    resp = client.post("/api/analyze", data={"magnet": magnet, "media_type": "anime"})
+    assert resp.status_code == 200
+    res = resp.json()
+    assert res["status"] == "ok"
+    assert res["info_hash"] == "1367d17301f00130830777d70295477daa11b7c1"
+    assert "Cyberpunk" in res["raw_name"]
+    assert "tmdb_warning" in res
+    assert len(res["results"]) == 0
+
+
+
 # --- 4. /api/add and /api/add-selective with .torrent File ---
 
 def test_api_add_with_torrent_file(monkeypatch):

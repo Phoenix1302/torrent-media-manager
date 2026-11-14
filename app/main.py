@@ -499,16 +499,39 @@ async def analyze(
         raw_name = extract_name_from_magnet(magnet)
         info_hash = extract_info_hash_from_magnet(magnet)
 
-    parsed = guessit(raw_name)
-    query = get_tmdb_query(raw_name, manual_query)
-    season_info = parse_season_episode(raw_name)
+    try:
+        parsed = guessit(raw_name) if raw_name else {}
+    except Exception:
+        parsed = {}
+
+    try:
+        query = get_tmdb_query(raw_name, manual_query)
+    except Exception:
+        query = manual_query or raw_name or ""
+
+    try:
+        season_info = parse_season_episode(raw_name) if raw_name else {}
+    except Exception:
+        season_info = {}
 
     if media_type in {"movie", "cartoon"}:
         tmdb_type = "movie"
     else:
         tmdb_type = "tv"
 
-    results = await search_tmdb(str(query), tmdb_type)
+    results = []
+    tmdb_warning = ""
+
+    try:
+        results = await search_tmdb(str(query), tmdb_type)
+        if not results:
+            from config import TMDB_API_KEY
+            if not TMDB_API_KEY:
+                tmdb_warning = "TMDB_API_KEY не задан в .env. Релиз можно добавить с ручным указанием названия."
+            elif query:
+                tmdb_warning = f"В TMDB ничего не найдено по запросу: '{query}'"
+    except Exception as exc:
+        tmdb_warning = f"Ошибка связи с TMDB: {exc}"
 
     return {
         "status": "ok",
@@ -521,6 +544,7 @@ async def analyze(
         "tmdb_type": tmdb_type,
         "results": results,
         "info_hash": info_hash,
+        "tmdb_warning": tmdb_warning,
     }
 
 
