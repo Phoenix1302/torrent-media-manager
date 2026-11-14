@@ -12,6 +12,8 @@ APP_NAME="torrent-media-manager"
 APP_VERSION="1.1.0"
 IMAGE_TAG="localhost/torrent-media-manager_torrent-media-manager:v1.1.0"
 IMAGE_ALIAS="localhost/torrent-media-manager:v1.1.0"
+OPT_DIR="/opt/torrent-media-manager"
+ORIG_DIR=""
 
 # ANSI Colors
 C_RESET="\033[0m"
@@ -79,19 +81,57 @@ check_system() {
 }
 
 # ------------------------------------------------------------------------------
-# 2. Determine Deployment Mode (Rootless vs Root/System)
+# 2. Canonical Location Check (/opt/torrent-media-manager)
+# ------------------------------------------------------------------------------
+ensure_canonical_location() {
+  ORIG_DIR="${SCRIPT_DIR}"
+  if [[ "${SCRIPT_DIR}" != "${OPT_DIR}" ]]; then
+    log_warn "Скрипт запущен из '${ORIG_DIR}', а не из канонической папки '${OPT_DIR}'."
+    log_info "Автоматическое копирование файлов проекта в ${OPT_DIR}..."
+
+    if [[ "$(id -u)" -eq 0 ]]; then
+      mkdir -p "${OPT_DIR}"
+      if [[ -f "${OPT_DIR}/.env" ]]; then
+        cp -an "${ORIG_DIR}/." "${OPT_DIR}/" 2>/dev/null || cp -a "${ORIG_DIR}/." "${OPT_DIR}/"
+      else
+        cp -a "${ORIG_DIR}/." "${OPT_DIR}/"
+      fi
+      chown -R "${TARGET_UID}:${TARGET_GID}" "${OPT_DIR}"
+      chmod -R 775 "${OPT_DIR}"
+    else
+      sudo mkdir -p "${OPT_DIR}"
+      if [[ -f "${OPT_DIR}/.env" ]]; then
+        sudo cp -an "${ORIG_DIR}/." "${OPT_DIR}/" 2>/dev/null || sudo cp -a "${ORIG_DIR}/." "${OPT_DIR}/"
+      else
+        sudo cp -a "${ORIG_DIR}/." "${OPT_DIR}/"
+      fi
+      sudo chown -R "${TARGET_UID}:${TARGET_GID}" "${OPT_DIR}"
+      sudo chmod -R 775 "${OPT_DIR}"
+    fi
+
+    log_success "Код проекта успешно размещен в ${OPT_DIR}."
+    log_info "Переключение рабочей директории в ${OPT_DIR}..."
+    cd "${OPT_DIR}"
+    SCRIPT_DIR="${OPT_DIR}"
+  else
+    log_info "Каноническое размещение подтверждено: ${OPT_DIR}"
+  fi
+}
+
+# ------------------------------------------------------------------------------
+# 3. Determine Deployment Mode (Rootless vs Root/System)
 # ------------------------------------------------------------------------------
 detect_mode() {
   if [[ "$(id -u)" -eq 0 ]]; then
     DEPLOY_MODE="system"
     QUADLET_DIR="/etc/containers/systemd"
-    CONFIG_DIR="/etc/torrent-media-manager"
+    CONFIG_DIR="${OPT_DIR}"
     SYSTEMCTL_CMD="systemctl"
     log_info "Режим развертывания: SYSTEM (Root Service)"
   else
     DEPLOY_MODE="user"
     QUADLET_DIR="${HOME}/.config/containers/systemd"
-    CONFIG_DIR="${HOME}/.config/torrent-media-manager"
+    CONFIG_DIR="${OPT_DIR}"
     SYSTEMCTL_CMD="systemctl --user"
     log_info "Режим развертывания: ROOTLESS (User: $(whoami))"
 
@@ -222,20 +262,28 @@ setup_directories() {
 # 4. Environment File (.env) Configuration
 # ------------------------------------------------------------------------------
 setup_config() {
-  log_info "3/7 Настройка файла переменных окружения..."
+  log_info "3/7 Настройка файла переменных окружения (.env)..."
 
-  mkdir -p "${CONFIG_DIR}"
-  ENV_FILE="${CONFIG_DIR}/env"
+  mkdir -p "${OPT_DIR}"
+  ENV_FILE="${OPT_DIR}/.env"
 
   if [[ ! -f "${ENV_FILE}" ]]; then
-    if [[ -f "${SCRIPT_DIR}/.env" ]]; then
+    if [[ -n "${ORIG_DIR:-}" && -f "${ORIG_DIR}/.env" && "${ORIG_DIR}/.env" != "${ENV_FILE}" ]]; then
+      log_info "Перенос существующего .env из ${ORIG_DIR} в ${ENV_FILE}..."
+      cp "${ORIG_DIR}/.env" "${ENV_FILE}"
+    elif [[ -f "${SCRIPT_DIR}/.env" && "${SCRIPT_DIR}/.env" != "${ENV_FILE}" ]]; then
       log_info "Копирование существующего .env в ${ENV_FILE}..."
       cp "${SCRIPT_DIR}/.env" "${ENV_FILE}"
     else
       log_info "Создание ${ENV_FILE} на основе .env.example..."
       cp "${SCRIPT_DIR}/.env.example" "${ENV_FILE}"
     fi
-    chmod 600 "${ENV_FILE}"
+    chmod 660 "${ENV_FILE}" 2>/dev/null || chmod 600 "${ENV_FILE}" 2>/dev/null || true
+    if [[ "$(id -u)" -eq 0 ]]; then
+      chown "${TARGET_UID}:${TARGET_GID}" "${ENV_FILE}" 2>/dev/null || true
+    else
+      sudo chown "${TARGET_UID}:${TARGET_GID}" "${ENV_FILE}" 2>/dev/null || true
+    fi
     log_warn "Создан новый файл конфигурации: ${ENV_FILE}"
     log_warn "Пожалуйста, проверьте в нем QBITTORRENT_PASS и TMDB_API_KEY при необходимости."
   else
@@ -358,15 +406,23 @@ show_summary() {
   echo -e "${C_BOLD}  🎉 Раскатка Torrent Media Manager v${APP_VERSION} завершена успешно!${C_RESET}"
   echo -e "${C_GREEN}══════════════════════════════════════════════════════════════════${C_RESET}"
   echo -e "  🌐 Web UI:         ${C_CYAN}http://${SERVER_IP}:8000/${C_RESET} или ${C_CYAN}http://localhost:8000/${C_RESET}"
-  echo -e "  ⚙️  Конфигурация:   ${ENV_FILE}"
+  echo -e "  📁 Код приложения: ${C_YELLOW}${OPT_DIR}${C_RESET}"
+  echo -e "  ⚙️  Конфигурация:   ${C_YELLOW}${ENV_FILE}${C_RESET}"
   echo -e "  📦 Quadlet Unit:   ${QUADLET_TARGET}"
-  echo -e "  💾 База данных:    /opt/torrent-media-manager/data/app.db"
+  echo -e "  💾 База данных:    ${OPT_DIR}/data/app.db"
   echo ""
+  if [[ -n "${ORIG_DIR:-}" && "${ORIG_DIR}" != "${OPT_DIR}" ]]; then
+    echo -e "${C_BOLD}Очистка временных файлов:${C_RESET}"
+    echo -e "  Код программы теперь находится в ${OPT_DIR}."
+    echo -e "  Старую папку в root можно удалить командой: ${C_RED}rm -rf ${ORIG_DIR}${C_RESET}"
+    echo ""
+  fi
   echo -e "${C_BOLD}Полезные команды управления:${C_RESET}"
   echo -e "  • Статус сервиса:  ${C_YELLOW}${SYSTEMCTL_CMD} status ${APP_NAME}${C_RESET}"
   echo -e "  • Журнал логов:    ${C_YELLOW}journalctl ${DEPLOY_MODE:+--user} -u ${APP_NAME} -f${C_RESET}"
   echo -e "  • Перезапуск:      ${C_YELLOW}${SYSTEMCTL_CMD} restart ${APP_NAME}${C_RESET}"
   echo -e "  • Остановка:       ${C_YELLOW}${SYSTEMCTL_CMD} stop ${APP_NAME}${C_RESET}"
+  echo -e "  • Обновление:      ${C_YELLOW}cd ${OPT_DIR} && git pull && ./deploy.sh${C_RESET}"
   echo -e "${C_GREEN}══════════════════════════════════════════════════════════════════${C_RESET}"
 }
 
@@ -378,6 +434,8 @@ main() {
     deploy|install)
       print_banner
       check_system
+      load_user_ids
+      ensure_canonical_location
       detect_mode
       setup_directories
       setup_config

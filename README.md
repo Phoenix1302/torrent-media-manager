@@ -66,30 +66,37 @@
 
 ### 1. Автоматическая раскатка на боевом сервере (RHEL 10, SELinux disabled)
 
+Каноническое расположение проекта в системе — `/opt/torrent-media-manager`.
 Для быстрой и полностью автоматизированной раскатки на **Red Hat Enterprise Linux 10** (а также Rocky Linux 10 / AlmaLinux 10) подготовлен скрипт `deploy.sh`:
 
 ```bash
-# 1. Клонирование репозитория
-git clone https://github.com/Phoenix1302/torrent-media-manager.git
-cd torrent-media-manager
+# 1. Создание каталога в /opt и клонирование репозитория
+sudo mkdir -p /opt/torrent-media-manager
+sudo chown -R 1000:1000 /opt/torrent-media-manager
+git clone https://github.com/Phoenix1302/torrent-media-manager.git /opt/torrent-media-manager
+cd /opt/torrent-media-manager
 
 # 2. Выдача прав и запуск авто-деплоя
 chmod +x deploy.sh
-./deploy.sh
+sudo ./deploy.sh
 ```
+
+> **Примечание об авто-миграции:** Если скрипт `deploy.sh` был запущен из `/root` или другой директории, он автоматически перенесет проект в `/opt/torrent-media-manager`, установит права `smbwriter` (`1000:1000`, `0775`) и продолжит сборку и запуск из `/opt`. Временную папку в `/root` после этого можно удалить (`rm -rf /root/torrent-media-manager`).
 
 **Что делает скрипт:**
 - Проверяет ОС RHEL 10 и статус SELinux.
 - Проверяет и при необходимости устанавливает `podman` и `curl` через `dnf`.
+- Автоматически проверяет и обеспечивает размещение файлов в `/opt/torrent-media-manager`.
 - Автоматически определяет режим (Rootless с включением `loginctl enable-linger` или Root System Service).
-- Создает каталоги хранения (`/opt/torrent-media-manager/data`, `/mnt/dlc_data/...`, `/mnt/main_data/...`) и выставляет права `UID:GID 1000:1000`.
-- Создает файл конфигурации из `.env.example` с безопасными правами (`chmod 600`).
+- Создает каталоги хранения (`/opt/torrent-media-manager/data`, `/mnt/dlc_data/...`, `/mnt/main_data/...`) и выставляет права `UID:GID 1000:1000` (smbwriter) и `1002:1003` (qbittorrent-nox).
+- Создает файл конфигурации `/opt/torrent-media-manager/.env` из `.env.example` с безопасными правами.
 - Собирает образ `localhost/torrent-media-manager_torrent-media-manager:v1.1.0`.
-- Устанавливает Quadlet unit-файл в `~/.config/containers/systemd/` (или `/etc/containers/systemd/`).
+- Устанавливает Quadlet unit-файл в `/etc/containers/systemd/` (или `~/.config/containers/systemd/`).
 - Перезагружает `systemd`, запускает сервис и проводит проверку работоспособности через `/api/health`.
 
 **Команды управления сервисом:**
 ```bash
+cd /opt/torrent-media-manager
 ./deploy.sh status    # Проверка статуса
 ./deploy.sh logs      # Просмотр логов в реальном времени
 ./deploy.sh restart   # Перезапуск сервиса

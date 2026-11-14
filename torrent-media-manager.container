@@ -12,8 +12,8 @@ Network=host
 User=1000:1000
 GroupAdd=1003
 
-# Environment file path for sensitive credentials and overrides (%h expands to user home in user units)
-EnvironmentFile=%h/.config/torrent-media-manager/env
+# Environment file path for sensitive credentials and overrides in /opt/torrent-media-manager
+EnvironmentFile=/opt/torrent-media-manager/.env
 
 Environment=QBITTORRENT_HOST=http://127.0.0.1:8080
 Environment=QBITTORRENT_USER=admin
