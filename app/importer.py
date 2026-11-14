@@ -1,6 +1,7 @@
 import os
 import re
 import shutil
+import time
 from pathlib import Path
 
 from config import (
@@ -241,6 +242,7 @@ def import_file(source: Path, target: Path, import_mode_override: str | None = N
 
     if target.exists():
         apply_import_permissions(target)
+        print(f"[importer] Target already exists, skipping copy: {target.name}", flush=True)
 
         return {
             "status": "exists",
@@ -249,6 +251,14 @@ def import_file(source: Path, target: Path, import_mode_override: str | None = N
         }
 
     effective_mode = import_mode_override or IMPORT_MODE
+    size_mb = 0
+    try:
+        size_mb = round(source.stat().st_size / (1024 * 1024), 1)
+    except OSError:
+        pass
+
+    print(f"[importer] Transferring ({effective_mode}, {size_mb} MB): {source.name} -> {target.name}", flush=True)
+    t0 = time.monotonic()
 
     if effective_mode == "move":
         shutil.move(str(source), str(target))
@@ -265,6 +275,10 @@ def import_file(source: Path, target: Path, import_mode_override: str | None = N
     else:
         shutil.copy2(source, target)
         method = "copy"
+
+    duration = max(round(time.monotonic() - t0, 2), 0.01)
+    speed_mb = round(size_mb / duration, 1) if size_mb > 0 else 0
+    print(f"[importer] Done ({method}) in {duration}s (~{speed_mb} MB/s): {target.name}", flush=True)
 
     apply_import_permissions(target)
 
@@ -419,8 +433,11 @@ def import_from_path(
 
     if preview.get("mode") == "folder_episodes":
         results = []
+        total_items = len(preview["items"])
+        print(f"[importer] Starting batch import of {total_items} items...", flush=True)
 
-        for item in preview["items"]:
+        for idx, item in enumerate(preview["items"], 1):
+            print(f"[importer] [{idx}/{total_items}] Importing: {Path(item['source']).name}", flush=True)
             result = import_file(
                 Path(item["source"]),
                 Path(item["target"]),
@@ -428,12 +445,14 @@ def import_from_path(
             )
             results.append(result)
 
+        print(f"[importer] Batch import completed ({total_items} items)", flush=True)
         return {
             "status": "ok",
             "preview": preview,
             "imported_items": results,
         }
 
+    print(f"[importer] Importing single media file: {Path(preview['source']).name}", flush=True)
     result = import_file(
         Path(preview["source"]),
         Path(preview["target"]),

@@ -1907,6 +1907,7 @@
         </button>
         <button class="nav-tab-btn" data-tab="tab-history" onclick="switchTab('tab-history')">
           <span>📜 История</span>
+          <span class="nav-tab-badge" id="navHistoryCount">0</span>
         </button>
       </nav>
 
@@ -2143,6 +2144,11 @@
           <button class="filter-btn" data-filter="muxing" onclick="filterJobs('muxing')">⚙️ Склейка</button>
           <button class="filter-btn" data-filter="waiting" onclick="filterJobs('waiting')">⏳ Ожидание</button>
           <button class="filter-btn" data-filter="error" onclick="filterJobs('error')">❌ Ошибки</button>
+        </div>
+
+        <div style="margin-bottom: 16px; padding: 10px 14px; background: rgba(139, 92, 246, 0.08); border: 1px solid rgba(139, 92, 246, 0.25); border-radius: var(--radius-sm); font-size: 13px; color: var(--text-muted); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+          <span>💡 <strong>Завершённые задачи:</strong> после переноса файлов в медиатеку релизы автоматически перемещаются в журнал истории.</span>
+          <button class="btn-secondary btn-sm" onclick="switchTab('tab-history')" style="padding: 4px 10px; font-size: 12px;">📜 Открыть «Историю»</button>
         </div>
 
         <!-- Jobs list container -->
@@ -3070,8 +3076,8 @@
 
       if (!filtered.length) {
         root.innerHTML = `
-          <div style="text-align: center; color: var(--muted); padding: 40px;">
-            ${allJobs.length ? "Нет задач с выбранным статусом." : "Очередь задач пуста."}
+          <div style="text-align: center; color: var(--muted); padding: 40px; line-height: 1.6;">
+            ${allJobs.length ? "Нет задач с выбранным статусом." : 'Очередь активных задач пуста.<br><span style="font-size: 13px;">Все выполненные релизы перенесены в <a href="javascript:void(0)" onclick="switchTab(\'tab-history\')" style="color: var(--accent); text-decoration: underline; font-weight: 600;">«Историю импорта»</a>.</span>'}
           </div>`;
         return;
       }
@@ -3825,6 +3831,8 @@
     function renderHistory() {
       const tbody = $("historyTableBody");
       const items = State.history;
+      const countEl = $("navHistoryCount");
+      if (countEl) countEl.textContent = items.length;
 
       if (!items.length) {
         tbody.innerHTML = `
@@ -3954,9 +3962,14 @@
 
       // 3. Jobs
       if (Array.isArray(tick.jobs)) {
+        const prevCount = State.jobs.length;
         State.jobs = tick.jobs;
         const countEl = $("navJobsCount");
         if (countEl) countEl.textContent = tick.jobs.length;
+
+        if (prevCount > 0 && tick.jobs.length < prevCount) {
+          fetchHistory();
+        }
 
         updateMuxJobsList();
 
@@ -4050,6 +4063,7 @@
       fetchDisk();
       fetchJobs();
       fetchTorrents();
+      fetchHistory();
 
       initSSE();
     });
