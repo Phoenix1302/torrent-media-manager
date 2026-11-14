@@ -103,17 +103,44 @@ detect_mode() {
   fi
 }
 
+# Load custom UID/GID values from env if present
+load_user_ids() {
+  if [[ -f "${ENV_FILE:-}" ]]; then
+    set -a
+    # shellcheck disable=SC1090
+    . "${ENV_FILE}"
+    set +a
+  elif [[ -f "${SCRIPT_DIR}/.env" ]]; then
+    set -a
+    # shellcheck disable=SC1091
+    . "${SCRIPT_DIR}/.env"
+    set +a
+  fi
+
+  # smbwriter defaults
+  TARGET_UID="${PUID:-${TARGET_UID:-1000}}"
+  TARGET_GID="${PGID:-${TARGET_GID:-1000}}"
+  
+  # qbittorrent-nox defaults
+  QBIT_UID="${QBIT_UID:-1002}"
+  QBIT_GID="${QBIT_GID:-1003}"
+  SUPPLEMENTARY_GIDS="${SUPPLEMENTARY_GIDS:-1003}"
+
+  log_info "Пользователи и группы: App UID/GID=${TARGET_UID}:${TARGET_GID} (smbwriter), QBit UID/GID=${QBIT_UID}:${QBIT_GID}, Supplementary GID=${SUPPLEMENTARY_GIDS}"
+}
+
 # ------------------------------------------------------------------------------
 # 3. Create Storage Directories and Set Permissions
 # ------------------------------------------------------------------------------
 setup_directories() {
-  log_info "2/7 Подготовка каталогов хранения и прав доступа (UID/GID 1000:1000)..."
+  load_user_ids
+  log_info "2/7 Подготовка каталогов хранения и прав доступа..."
 
   # Application DB / persistent data path
   DATA_DIR="/opt/torrent-media-manager/data"
   if [[ "$(id -u)" -eq 0 ]]; then
     mkdir -p "${DATA_DIR}"
-    chown -R 1000:1000 "/opt/torrent-media-manager"
+    chown -R "${TARGET_UID}:${TARGET_GID}" "/opt/torrent-media-manager"
     chmod -R 775 "${DATA_DIR}"
   else
     if [[ -w "/opt" || -d "${DATA_DIR}" && -w "${DATA_DIR}" ]]; then
@@ -122,15 +149,13 @@ setup_directories() {
     else
       log_info "Создание ${DATA_DIR} через sudo..."
       sudo mkdir -p "${DATA_DIR}"
-      sudo chown -R 1000:1000 "/opt/torrent-media-manager"
+      sudo chown -R "${TARGET_UID}:${TARGET_GID}" "/opt/torrent-media-manager"
       sudo chmod -R 775 "${DATA_DIR}"
     fi
   fi
 
-  # Media server target directories
+  # Media destination directories (smbwriter: 1000:1000, 0775)
   MEDIA_DIRS=(
-    "/mnt/dlc_data/torrents/InComplete"
-    "/mnt/dlc_data/torrents/Complete"
     "/mnt/main_data/Media/InComplete"
     "/mnt/main_data/Media/Video/Films"
     "/mnt/main_data/Media/Video/Serials"
@@ -140,20 +165,57 @@ setup_directories() {
 
   for dir in "${MEDIA_DIRS[@]}"; do
     if [[ ! -d "${dir}" ]]; then
-      log_info "Создание каталога: ${dir}"
+      log_info "Создание каталога медиатеки: ${dir}"
       if [[ "$(id -u)" -eq 0 ]]; then
         mkdir -p "${dir}"
-        chown -R 1000:1000 "${dir}" || true
+        chown -R "${TARGET_UID}:${TARGET_GID}" "${dir}" || true
         chmod 775 "${dir}" || true
       else
         sudo mkdir -p "${dir}" 2>/dev/null || mkdir -p "${dir}" 2>/dev/null || true
-        sudo chown -R 1000:1000 "${dir}" 2>/dev/null || true
+        sudo chown -R "${TARGET_UID}:${TARGET_GID}" "${dir}" 2>/dev/null || true
+        sudo chmod 775 "${dir}" 2>/dev/null || true
+      fi
+    else
+      # Ensure group write permission on existing directory
+      if [[ "$(id -u)" -eq 0 ]]; then
+        chmod 775 "${dir}" || true
+      else
+        sudo chmod 775 "${dir}" 2>/dev/null || chmod 775 "${dir}" 2>/dev/null || true
+      fi
+    fi
+  done
+
+  # Download directories (qbittorrent-nox: 1002:1003)
+  TORRENT_DIRS=(
+    "/mnt/dlc_data/torrents"
+    "/mnt/dlc_data/torrents/InComplete"
+    "/mnt/dlc_data/torrents/Complete"
+    "/mnt/main_data/Media/Downloads"
+  )
+
+  for dir in "${TORRENT_DIRS[@]}"; do
+    if [[ -d "${dir}" ]]; then
+      log_info "Корректировка прав на каталог торрентов (g+rwx для группы ${QBIT_GID}): ${dir}"
+      if [[ "$(id -u)" -eq 0 ]]; then
+        chmod g+rwx "${dir}" || true
+      else
+        sudo chmod g+rwx "${dir}" 2>/dev/null || chmod g+rwx "${dir}" 2>/dev/null || true
+      fi
+    else
+      log_info "Создание каталога торрентов: ${dir}"
+      if [[ "$(id -u)" -eq 0 ]]; then
+        mkdir -p "${dir}"
+        chown -R "${QBIT_UID}:${QBIT_GID}" "${dir}" || true
+        chmod 775 "${dir}" || true
+      else
+        sudo mkdir -p "${dir}" 2>/dev/null || mkdir -p "${dir}" 2>/dev/null || true
+        sudo chown -R "${QBIT_UID}:${QBIT_GID}" "${dir}" 2>/dev/null || true
         sudo chmod 775 "${dir}" 2>/dev/null || true
       fi
     fi
   done
 
-  log_success "Каталоги подготовлены."
+  log_success "Каталоги и права доступа настроены (0775 / g+rwx)."
 }
 
 # ------------------------------------------------------------------------------
@@ -221,8 +283,11 @@ install_quadlet() {
     exit 1
   fi
 
-  # Generate target container unit with exact environment file path
-  sed -e "s|^EnvironmentFile=.*|EnvironmentFile=${ENV_FILE}|g" "${SRC_UNIT}" > "${QUADLET_TARGET}"
+  # Generate target container unit with exact environment file path and user IDs
+  sed -e "s|^EnvironmentFile=.*|EnvironmentFile=${ENV_FILE}|g" \
+      -e "s|^User=.*|User=${TARGET_UID}:${TARGET_GID}|g" \
+      -e "s|^GroupAdd=.*|GroupAdd=${SUPPLEMENTARY_GIDS}|g" \
+      "${SRC_UNIT}" > "${QUADLET_TARGET}"
   chmod 644 "${QUADLET_TARGET}"
 
   log_success "Quadlet установлен в: ${QUADLET_TARGET}"

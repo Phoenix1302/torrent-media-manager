@@ -26,5 +26,25 @@ class TestConfigVersion(unittest.TestCase):
         self.assertIn('"app": "torrent-media-manager"', content)
 
 
+    def test_user_and_permission_configs(self):
+        self.assertTrue(hasattr(config, "PUID"))
+        self.assertTrue(hasattr(config, "PGID"))
+        self.assertTrue(hasattr(config, "TARGET_UID"))
+        self.assertTrue(hasattr(config, "TARGET_GID"))
+        self.assertTrue(hasattr(config, "QBIT_UID"))
+        self.assertTrue(hasattr(config, "QBIT_GID"))
+        self.assertTrue(hasattr(config, "DIR_MODE"))
+        self.assertTrue(hasattr(config, "FILE_MODE"))
+        self.assertTrue(hasattr(config, "UMASK"))
+
+        self.assertEqual(config.TARGET_UID, 1000)
+        self.assertEqual(config.TARGET_GID, 1000)
+        self.assertEqual(config.QBIT_UID, 1002)
+        self.assertEqual(config.QBIT_GID, 1003)
+        self.assertEqual(config.DIR_MODE, 0o775)
+        self.assertEqual(config.FILE_MODE, 0o775)
+        self.assertEqual(config.UMASK, 0o002)
+
+
 if __name__ == "__main__":
     unittest.main()

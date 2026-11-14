@@ -13,6 +13,8 @@ from config import (
     DELETE_SOURCE_AFTER_IMPORT,
     DIR_MODE,
     FILE_MODE,
+    TARGET_UID,
+    TARGET_GID,
 )
 
 
@@ -47,6 +49,15 @@ def chmod_path(path: Path, mode: int):
         pass
 
 
+def chown_path(path: Path, uid: int | None = None, gid: int | None = None):
+    try:
+        u = uid if uid is not None else TARGET_UID
+        g = gid if gid is not None else TARGET_GID
+        os.chown(path, u, g)
+    except OSError:
+        pass
+
+
 def is_library_root(path: Path) -> bool:
     library_roots = {
         str(Path(MOVIES_PATH)),
@@ -65,6 +76,7 @@ def ensure_parent_dir(path: Path):
 
     while True:
         chmod_path(current, DIR_MODE)
+        chown_path(current, TARGET_UID, TARGET_GID)
 
         if is_library_root(current):
             break
@@ -79,11 +91,13 @@ def ensure_parent_dir(path: Path):
 
 def apply_import_permissions(target: Path):
     chmod_path(target, FILE_MODE)
+    chown_path(target, TARGET_UID, TARGET_GID)
 
     current = target.parent
 
     while True:
         chmod_path(current, DIR_MODE)
+        chown_path(current, TARGET_UID, TARGET_GID)
 
         if is_library_root(current):
             break

@@ -7,7 +7,10 @@ Wants=network-online.target
 ContainerName=torrent-media-manager
 Image=localhost/torrent-media-manager_torrent-media-manager:v1.1.0
 Network=host
+# Container execution user (UID:GID) and supplementary group
+# User 1000:1000 (smbwriter), Group 1003 (qbittorrent-nox)
 User=1000:1000
+GroupAdd=1003
 
 # Environment file path for sensitive credentials and overrides (%h expands to user home in user units)
 EnvironmentFile=%h/.config/torrent-media-manager/env

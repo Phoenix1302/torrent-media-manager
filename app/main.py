@@ -13,6 +13,7 @@ from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from guessit import guessit
 
+from config import APP_VERSION, UMASK, PUID, PGID
 from database import (
     delete_job,
     get_job_by_id,
@@ -48,6 +49,10 @@ from watcher import start_watcher
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    try:
+        os.umask(UMASK)
+    except Exception:
+        pass
     init_db()
     start_watcher()
     yield

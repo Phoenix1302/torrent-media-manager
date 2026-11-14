@@ -60,3 +60,14 @@ AUTO_IMPORT_INTERVAL_SECONDS = int(os.getenv("AUTO_IMPORT_INTERVAL_SECONDS", "60
 
 DIR_MODE = int(os.getenv("DIR_MODE", "775"), 8)
 FILE_MODE = int(os.getenv("FILE_MODE", "775"), 8)
+UMASK = int(os.getenv("UMASK", "002"), 8)
+
+# User and Group IDs (Ownership)
+# Default: smbwriter (1000:1000) for media library, qbittorrent-nox (1002:1003) for downloads
+PUID = int(os.getenv("PUID", os.getenv("TARGET_UID", "1000")))
+PGID = int(os.getenv("PGID", os.getenv("TARGET_GID", "1000")))
+TARGET_UID = PUID
+TARGET_GID = PGID
+QBIT_UID = int(os.getenv("QBIT_UID", "1002"))
+QBIT_GID = int(os.getenv("QBIT_GID", "1003"))
+
