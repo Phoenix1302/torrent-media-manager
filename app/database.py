@@ -89,6 +89,42 @@ def init_db():
     conn.commit()
     conn.close()
 
+    recover_interrupted_jobs()
+
+
+def recover_interrupted_jobs():
+    """
+    Восстановление задач после перезапуска сервиса.
+    Если процесс упал во время copying / staging / muxing, сбрасываем статус в waiting / needs_mux,
+    чтобы задача не висела 'вечно в процессе'.
+    """
+    conn = get_conn()
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        UPDATE import_jobs
+        SET status = 'waiting',
+            error = 'Процесс был прерван перезапуском сервиса, возобновление...'
+        WHERE status IN ('importing', 'staging')
+        """
+    )
+    if cursor.rowcount > 0:
+        print(f"[recovery] Reset {cursor.rowcount} interrupted job(s) from importing/staging to waiting", flush=True)
+
+    cursor.execute(
+        """
+        UPDATE import_jobs
+        SET status = 'needs_mux',
+            error = 'Склейка была прервана перезапуском сервиса, требуется повторный запуск'
+        WHERE status = 'muxing'
+        """
+    )
+    if cursor.rowcount > 0:
+        print(f"[recovery] Reset {cursor.rowcount} interrupted job(s) from muxing to needs_mux", flush=True)
+
+    conn.commit()
+    conn.close()
+
 
 def upsert_job(
     torrent_hash: str,

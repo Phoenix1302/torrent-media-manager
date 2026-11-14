@@ -241,14 +241,22 @@ def import_file(source: Path, target: Path, import_mode_override: str | None = N
     ensure_parent_dir(target)
 
     if target.exists():
-        apply_import_permissions(target)
-        print(f"[importer] Target already exists, skipping copy: {target.name}", flush=True)
-
-        return {
-            "status": "exists",
-            "source": str(source),
-            "target": str(target),
-        }
+        try:
+            target_size = target.stat().st_size
+            source_size = source.stat().st_size
+            if target_size == source_size and target_size > 0:
+                apply_import_permissions(target)
+                print(f"[importer] Target already exists with matching size ({round(target_size / 1048576, 1)} MB), skipping: {target.name}", flush=True)
+                return {
+                    "status": "exists",
+                    "source": str(source),
+                    "target": str(target),
+                }
+            else:
+                print(f"[importer] Target exists but size mismatch (partial file: {round(target_size / 1048576, 1)} MB != {round(source_size / 1048576, 1)} MB), overwriting: {target.name}", flush=True)
+                target.unlink(missing_ok=True)
+        except OSError:
+            pass
 
     effective_mode = import_mode_override or IMPORT_MODE
     size_mb = 0
