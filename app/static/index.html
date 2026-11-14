@@ -2276,7 +2276,10 @@
             <div class="card-title">Раздачи в qBittorrent</div>
             <div class="card-subtitle">Мониторинг прогресса, скоростей и создание импорта</div>
           </div>
-          <div style="display: flex; gap: 8px;">
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="btn btn-sm" id="btnCreateJobFromTorrent" style="display: none;" onclick="handleCreateJobFromTorrent()">
+              ➕ Создать задачу импорта
+            </button>
             <button class="btn-danger btn-sm" id="btnDeleteTorrent" style="display: none;" onclick="handleDeleteTorrent()">
               🗑️ Удалить раздачу
             </button>
@@ -3787,13 +3790,65 @@
         `;
       }).join("");
 
-      $("btnDeleteTorrent").style.display = State.selectedTorrentHash ? "inline-flex" : "none";
+      const hasSelection = Boolean(State.selectedTorrentHash);
+      const btnDelete = $("btnDeleteTorrent");
+      const btnCreate = $("btnCreateJobFromTorrent");
+      if (btnDelete) btnDelete.style.display = hasSelection ? "inline-flex" : "none";
+      if (btnCreate) btnCreate.style.display = hasSelection ? "inline-flex" : "none";
     }
 
     function selectTorrentCard(hash) {
       State.selectedTorrentHash = State.selectedTorrentHash === hash ? null : hash;
       renderTorrents();
     }
+
+    async function handleCreateJobFromTorrent() {
+      const hash = State.selectedTorrentHash;
+      if (!hash) return;
+      const torrent = State.torrents.find(t => t.hash === hash);
+      if (!torrent) return;
+
+      const rawName = torrent.name || "";
+      let cleanTitle = rawName;
+      let mediaType = "movie";
+      let year = "";
+
+      try {
+        const cleanRes = await apiRequest(`/api/clean-title?title=${encodeURIComponent(rawName)}`, {}, true);
+        if (cleanRes.status === "ok") {
+          cleanTitle = cleanRes.cleaned_title || cleanTitle;
+          mediaType = cleanRes.recommended_media_type || mediaType;
+        }
+      } catch (_) {}
+
+      const confirmed = await Modal.confirm({
+        title: "Создать задачу автоимпорта",
+        message: `Создать задачу импорта для раздачи «${cleanTitle}»?\n\nКатегория: ${mediaType}`,
+        confirmText: "Создать задачу",
+        cancelText: "Отмена"
+      });
+      if (!confirmed) return;
+
+      const fd = new FormData();
+      fd.append("torrent_hash", hash);
+      fd.append("media_type", mediaType);
+      fd.append("title", cleanTitle);
+      fd.append("plex_title", cleanTitle);
+      fd.append("year", year);
+      fd.append("season", 1);
+      fd.append("episode", 1);
+      fd.append("start_episode", 1);
+      fd.append("episode_title", "");
+      fd.append("season_pack", false);
+
+      const res = await apiRequest("/api/jobs", { method: "POST", body: fd });
+      if (res.status === "ok") {
+        Toast.success(`Задача импорта создана: ${cleanTitle}`);
+        fetchJobs();
+        switchTab("tab-jobs");
+      }
+    }
+    window.handleCreateJobFromTorrent = handleCreateJobFromTorrent;
 
     async function handleDeleteTorrent(targetHash) {
       const hash = targetHash || State.selectedTorrentHash;
