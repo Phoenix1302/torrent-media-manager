@@ -3033,6 +3033,12 @@
        ========================================================================== */
     async function fetchJobs(notify = false) {
       try {
+        if (notify) {
+          try {
+            await apiRequest("/api/jobs/trigger-check", { method: "POST" }, true);
+            await new Promise(r => setTimeout(r, 500));
+          } catch (_) {}
+        }
         const data = await apiRequest("/api/jobs", {}, true);
         if (data.status === "ok") {
           State.jobs = data.items || [];

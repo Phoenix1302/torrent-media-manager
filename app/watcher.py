@@ -41,26 +41,36 @@ def is_torrent_complete(torrent: dict):
     if not torrent:
         return False
 
-    progress = float(torrent.get("progress", 0))
+    progress = float(torrent.get("progress", 0) or 0)
+    progress_raw = float(torrent.get("progress_raw", 0) or 0)
     state = str(torrent.get("state", "")).lower()
 
-    if progress < 100:
-        return False
-
-    downloading_states = {
-        "downloading",
-        "stalleddl",
-        "metadl",
-        "forceddl",
-        "allocating",
-        "checkingdl",
-        "queueddl",
+    # Completed states in qBittorrent (seeding / finished)
+    completed_states = {
+        "uploading",
+        "stalledup",
+        "pausedup",
+        "stoppedup",
+        "queuedup",
+        "checkingup",
+        "forcedup",
+        "complete",
     }
 
-    if state in downloading_states:
+    if state in completed_states:
+        return True
+
+    # Active integrity checking or disk allocation must finish first
+    if state in {"checkingdl", "allocating"}:
         return False
 
-    return True
+    # When 100% of data is downloaded:
+    # In selective downloads or swarms without active leechers,
+    # qBittorrent often stays in 'stalledDL' or 'pausedDL' even though 100% of bytes are on disk.
+    if progress >= 100 or progress_raw >= 1.0:
+        return True
+
+    return False
 
 
 def resolve_torrent_path(torrent: dict):

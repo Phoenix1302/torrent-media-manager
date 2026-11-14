@@ -8,7 +8,7 @@ import time
 from pathlib import Path
 from urllib.parse import parse_qs, unquote_plus, urlparse
 
-from fastapi import FastAPI, File, Form, Request, UploadFile
+from fastapi import BackgroundTasks, FastAPI, File, Form, Request, UploadFile
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from guessit import guessit
@@ -797,6 +797,16 @@ def jobs():
     return {
         "status": "ok",
         "items": list_jobs(),
+    }
+
+
+@app.post("/api/jobs/trigger-check")
+def trigger_jobs_check(background_tasks: BackgroundTasks):
+    from watcher import run_auto_import_once
+    background_tasks.add_task(run_auto_import_once)
+    return {
+        "status": "ok",
+        "message": "Auto-import check triggered in background",
     }
 
 
