@@ -78,6 +78,11 @@ check_system() {
   fi
   PODMAN_VER=$(podman --version)
   log_success "Контейнерный движок: ${PODMAN_VER}"
+
+  # Configure safe directory for git to prevent dubious ownership warnings
+  if command -v git >/dev/null 2>&1; then
+    git config --global --add safe.directory "${OPT_DIR}" 2>/dev/null || true
+  fi
 }
 
 # ------------------------------------------------------------------------------
