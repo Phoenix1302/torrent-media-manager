@@ -12,30 +12,8 @@ Network=host
 User=1000:1000
 GroupAdd=1003
 
-# Environment file path for sensitive credentials and overrides in /opt/torrent-media-manager
+# Environment file path for all configurations and credentials (Single Source of Truth)
 EnvironmentFile=/opt/torrent-media-manager/.env
-
-Environment=QBITTORRENT_HOST=http://127.0.0.1:8080
-Environment=QBITTORRENT_USER=admin
-Environment=QBITTORRENT_PASS=adminadmin
-Environment=TMDB_API_KEY=
-Environment=QBIT_INCOMPLETE_PATH=/mnt/dlc_data/torrents/InComplete
-Environment=QBIT_COMPLETE_PATH=/mnt/dlc_data/torrents/Complete
-Environment=WATCH_PATH=/mnt/dlc_data/torrents/Complete
-Environment=STAGING_PATH=/mnt/main_data/Media/InComplete
-Environment=MOVIES_PATH=/mnt/main_data/Media/Video/Films
-Environment=TV_PATH=/mnt/main_data/Media/Video/Serials
-Environment=ANIME_PATH=/mnt/main_data/Media/Video/Anime
-Environment=CARTOONS_PATH=/mnt/main_data/Media/Video/Mults
-Environment=IMPORT_MODE=copy
-Environment=DELETE_SOURCE_AFTER_IMPORT=false
-Environment=DB_PATH=/app/data/app.db
-Environment=AUTO_IMPORT_INTERVAL_SECONDS=60
-Environment=DIR_MODE=775
-Environment=FILE_MODE=775
-Environment=DOWNLOAD_DISK_PATH=/mnt/dlc_data/torrents
-Environment=MIN_FREE_DLC_SPACE_GB=20
-Environment=QBIT_PREALLOCATE_DISK_SPACE=true
 
 Volume=/mnt/dlc_data/torrents:/mnt/dlc_data/torrents
 Volume=/mnt/main_data/Media:/mnt/main_data/Media
