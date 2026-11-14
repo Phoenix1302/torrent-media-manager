@@ -64,7 +64,41 @@
 
 ## 🚀 Развертывание
 
-### 1. Сервер: Podman Quadlet (Systemd Service)
+### 1. Автоматическая раскатка на боевом сервере (RHEL 10, SELinux disabled)
+
+Для быстрой и полностью автоматизированной раскатки на **Red Hat Enterprise Linux 10** (а также Rocky Linux 10 / AlmaLinux 10) подготовлен скрипт `deploy.sh`:
+
+```bash
+# 1. Клонирование репозитория
+git clone https://github.com/Phoenix1302/torrent-media-manager.git
+cd torrent-media-manager
+
+# 2. Выдача прав и запуск авто-деплоя
+chmod +x deploy.sh
+./deploy.sh
+```
+
+**Что делает скрипт:**
+- Проверяет ОС RHEL 10 и статус SELinux.
+- Проверяет и при необходимости устанавливает `podman` и `curl` через `dnf`.
+- Автоматически определяет режим (Rootless с включением `loginctl enable-linger` или Root System Service).
+- Создает каталоги хранения (`/opt/torrent-media-manager/data`, `/mnt/dlc_data/...`, `/mnt/main_data/...`) и выставляет права `UID:GID 1000:1000`.
+- Создает файл конфигурации из `.env.example` с безопасными правами (`chmod 600`).
+- Собирает образ `localhost/torrent-media-manager_torrent-media-manager:v1.1.0`.
+- Устанавливает Quadlet unit-файл в `~/.config/containers/systemd/` (или `/etc/containers/systemd/`).
+- Перезагружает `systemd`, запускает сервис и проводит проверку работоспособности через `/api/health`.
+
+**Команды управления сервисом:**
+```bash
+./deploy.sh status    # Проверка статуса
+./deploy.sh logs      # Просмотр логов в реальном времени
+./deploy.sh restart   # Перезапуск сервиса
+./deploy.sh stop      # Остановка сервиса
+```
+
+---
+
+### 2. Ручная установка Quadlet (Systemd Service)
 
 Файл конфигурации Quadlet расположен в `systemd/torrent-media-manager.container`.
 
