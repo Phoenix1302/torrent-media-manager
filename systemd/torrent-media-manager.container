@@ -5,7 +5,7 @@ Wants=network-online.target
 
 [Container]
 ContainerName=torrent-media-manager
-Image=localhost/torrent-media-manager_torrent-media-manager:v1.1.0
+Image=localhost/torrent-media-manager_torrent-media-manager:v1.1.1
 Network=host
 # Container execution user (UID:GID) and supplementary group
 # User 1000:1000 (smbwriter), Group 1003 (qbittorrent-nox)

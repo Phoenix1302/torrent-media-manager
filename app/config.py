@@ -1,6 +1,6 @@
 import os
 
-APP_VERSION = "1.1.0"
+APP_VERSION = "1.1.1"
 
 
 def env_bool(name: str, default: bool = False) -> bool:

@@ -1,4 +1,4 @@
-# Torrent Media Manager (v1.1.0)
+# Torrent Media Manager (v1.1.1)
 
 Веб-приложение для автоматизации загрузок через qBittorrent, глубокого анализа аудио/субтитров и распределения медиатеки по структуре папок Plex, Jellyfin и Emby.
 
@@ -47,7 +47,7 @@
                                   │ HTTP / SSE
                                   ▼
                 ┌───────────────────────────────────┐
-                │        FastAPI Core (v1.1.0)      │
+                │        FastAPI Core (v1.1.1)      │
                 │   - Bencode Torrent Parser        │
                 │   - MediaInspector (mkvmerge -J)  │
                 │   - Async Mux Worker + Tracker    │
@@ -90,7 +90,7 @@ sudo ./deploy.sh
 - Автоматически определяет режим (Rootless с включением `loginctl enable-linger` или Root System Service).
 - Создает каталоги хранения (`/opt/torrent-media-manager/data`, `/mnt/dlc_data/...`, `/mnt/main_data/...`) и выставляет права `UID:GID 1000:1000` (smbwriter) и `1002:1003` (qbittorrent-nox).
 - Создает файл конфигурации `/opt/torrent-media-manager/.env` из `.env.example` с безопасными правами.
-- Собирает образ `localhost/torrent-media-manager_torrent-media-manager:v1.1.0`.
+- Собирает образ `localhost/torrent-media-manager_torrent-media-manager:v1.1.1`.
 - Устанавливает Quadlet unit-файл в `/etc/containers/systemd/` (или `~/.config/containers/systemd/`).
 - Перезагружает `systemd`, запускает сервис и проводит проверку работоспособности через `/api/health`.
 
@@ -131,11 +131,11 @@ cd /opt/torrent-media-manager
 
 Сборка и запуск контейнера:
 ```bash
-podman build -t localhost/torrent-media-manager:v1.1.0 -f Containerfile .
+podman build -t localhost/torrent-media-manager:v1.1.1 -f Containerfile .
 podman run -d --name torrent-media-manager \
   --network host \
   -v ./data:/app/data:Z \
-  localhost/torrent-media-manager:v1.1.0
+  localhost/torrent-media-manager:v1.1.1
 ```
 
 Интерфейс доступен по адресу: `http://localhost:8000/`.
@@ -144,11 +144,11 @@ podman run -d --name torrent-media-manager \
 
 ## 🧪 Тестирование
 
-Проект содержит 45 автоматизированных тестов, охватывающих bencode-парсер, SQLite WAL, клиент qBittorrent, инспектор медиа и генератор команд mkvmerge.
+Проект содержит автоматизированные тесты, охватывающие bencode-парсер, SQLite WAL, клиент qBittorrent, инспектор медиа и генератор команд mkvmerge.
 
 Запуск тестового набора внутри Podman:
 ```bash
-podman run --rm localhost/torrent-media-manager:v1.1.0 pytest -v /app/tests
+podman run --rm localhost/torrent-media-manager:v1.1.1 pytest -v /app/tests
 ```
 
 ---

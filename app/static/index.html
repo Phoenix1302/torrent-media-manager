@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8">
-  <title>Torrent Media Manager v1.1.0</title>
+  <title>Torrent Media Manager v1.1.1</title>
   <link rel="icon" type="image/png" href="/static/favicon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -59,6 +59,13 @@
       padding: 0;
     }
 
+    html,
+    body {
+      overflow-x: hidden;
+      width: 100%;
+      max-width: 100vw;
+    }
+
     body {
       background: radial-gradient(circle at 15% 10%, #17153a 0%, #0b0f19 55%, #070a12 100%);
       color: var(--text);
@@ -67,7 +74,6 @@
       line-height: 1.5;
       display: flex;
       flex-direction: column;
-      overflow-x: hidden;
     }
 
     /* Custom Scrollbar */
@@ -397,7 +403,8 @@
     }
 
     .card:hover {
-      border-color: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.16);
+      box-shadow: 0 0 16px rgba(139, 92, 246, 0.15);
     }
 
     .card-header {
@@ -461,11 +468,13 @@
       color: var(--text-bright);
       border-radius: var(--radius-md);
       padding: 10px 14px;
+      min-height: 42px;
       outline: none;
       font-size: 13px;
       margin-bottom: 14px;
       transition: all 0.2s;
       font-family: inherit;
+      box-sizing: border-box;
     }
 
     input:disabled,
@@ -510,7 +519,8 @@
       align-items: center;
       gap: 10px;
       cursor: pointer;
-      margin-bottom: 14px;
+      margin-bottom: 10px;
+      min-height: 38px;
       text-transform: none;
       color: var(--text);
       font-size: 13px;
@@ -519,8 +529,10 @@
 
     .checkbox-row input[type="checkbox"],
     .checkbox-row input[type="radio"] {
-      width: 16px;
-      height: 16px;
+      width: 18px;
+      height: 18px;
+      min-width: 18px;
+      min-height: 18px;
       accent-color: var(--accent);
       cursor: pointer;
     }
@@ -531,9 +543,10 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      border: 0;
+      border: 1px solid transparent;
       color: #ffffff;
       padding: 10px 18px;
+      min-height: 42px;
       border-radius: var(--radius-md);
       font-weight: 700;
       font-size: 13px;
@@ -543,18 +556,18 @@
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
       text-decoration: none;
       user-select: none;
+      box-sizing: border-box;
     }
 
     button:hover:not(:disabled),
     .btn:hover:not(:disabled) {
-      filter: brightness(1.12);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 14px var(--accent-glow);
+      filter: brightness(1.08);
+      border-color: var(--accent);
+      box-shadow: 0 0 16px rgba(139, 92, 246, 0.35);
     }
 
     button:active:not(:disabled),
     .btn:active:not(:disabled) {
-      transform: translateY(0);
       filter: brightness(0.95);
     }
 
@@ -575,7 +588,9 @@
     button.btn-secondary:hover:not(:disabled) {
       background: var(--surface-hover);
       color: var(--text-bright);
-      border-color: var(--border-light);
+      border-color: var(--accent);
+      box-shadow: 0 0 16px rgba(139, 92, 246, 0.35);
+      filter: brightness(1.08);
     }
 
     button.btn-success {
@@ -583,16 +598,24 @@
       box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
     }
     button.btn-success:hover:not(:disabled) {
-      box-shadow: 0 4px 16px var(--success-glow);
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.4);
+      border-color: var(--success);
+      filter: brightness(1.08);
     }
 
     button.btn-danger {
       background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
     }
+    button.btn-danger:hover:not(:disabled) {
+      box-shadow: 0 0 16px rgba(239, 68, 68, 0.45);
+      border-color: var(--danger);
+      filter: brightness(1.08);
+    }
 
     button.btn-sm {
       padding: 6px 12px;
       font-size: 12px;
+      min-height: 36px;
       border-radius: var(--radius-sm);
     }
 
@@ -703,8 +726,8 @@
     .dropzone.dragover {
       border-color: var(--accent);
       background: rgba(139, 92, 246, 0.1);
-      transform: translateY(-1px);
-      box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+      box-shadow: 0 0 16px rgba(139, 92, 246, 0.35);
+      filter: brightness(1.08);
     }
 
     .dropzone-input {
@@ -834,8 +857,8 @@
 
     .poster-card:hover {
       border-color: var(--accent);
-      transform: translateY(-3px);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 0 16px rgba(139, 92, 246, 0.35);
+      filter: brightness(1.08);
     }
 
     .poster-card.selected {
@@ -974,8 +997,10 @@
     }
 
     .job-card:hover {
-      border-color: var(--border-light);
-      background: rgba(17, 24, 39, 0.8);
+      border-color: var(--accent);
+      background: rgba(17, 24, 39, 0.85);
+      box-shadow: 0 0 16px rgba(139, 92, 246, 0.25);
+      filter: brightness(1.08);
     }
 
     .job-header {
@@ -1073,7 +1098,9 @@
 
     .mux-job-item:hover {
       background: var(--surface-hover);
-      border-color: var(--border-light);
+      border-color: var(--accent);
+      box-shadow: 0 0 16px rgba(139, 92, 246, 0.25);
+      filter: brightness(1.08);
     }
 
     .mux-job-item.selected {
@@ -1243,8 +1270,10 @@
     }
 
     .torrent-card:hover {
-      border-color: var(--border-light);
+      border-color: var(--accent);
       background: var(--surface-hover);
+      box-shadow: 0 0 16px rgba(139, 92, 246, 0.25);
+      filter: brightness(1.08);
     }
 
     .torrent-card.selected {
@@ -1406,14 +1435,432 @@
       to { transform: translateY(0); opacity: 1; }
     }
 
-    /* Responsive adjustments */
+    /* ==========================================================================
+       MODAL DIALOG (DARK GLASSMORPHISM)
+       ========================================================================== */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 8, 16, 0.78);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .modal-backdrop.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-dialog {
+      background: rgba(18, 24, 38, 0.94);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: var(--radius-xl);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65), 0 0 35px rgba(139, 92, 246, 0.2);
+      max-width: 480px;
+      width: 100%;
+      transform: scale(0.95);
+      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+    }
+
+    .modal-backdrop.show .modal-dialog {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 22px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .modal-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #f8fafc;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+    }
+
+    .modal-close {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      font-size: 20px;
+      line-height: 1;
+      box-shadow: none;
+    }
+
+    .modal-close:hover {
+      color: #f8fafc;
+      background: rgba(255, 255, 255, 0.08);
+      transform: none;
+      box-shadow: none;
+    }
+
+    .modal-body {
+      padding: 20px 22px;
+      font-size: 14px;
+      line-height: 1.5;
+      color: #cbd5e1;
+    }
+
+    .modal-message {
+      word-break: break-word;
+    }
+
+    .modal-torrent-box {
+      background: rgba(11, 15, 25, 0.85);
+      border: 1px solid rgba(139, 92, 246, 0.35);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      margin-bottom: 16px;
+      box-shadow: 0 0 15px rgba(139, 92, 246, 0.15);
+    }
+
+    .modal-torrent-title {
+      font-weight: 700;
+      color: #ffffff;
+      font-size: 13px;
+      line-height: 1.4;
+      word-break: break-all;
+      margin-bottom: 6px;
+    }
+
+    .modal-torrent-hash {
+      font-family: monospace;
+      font-size: 11px;
+      color: #a78bfa;
+      word-break: break-all;
+    }
+
+    .modal-question {
+      font-size: 13px;
+      font-weight: 600;
+      color: #94a3b8;
+      margin-bottom: 14px;
+    }
+
+    .modal-delete-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .modal-delete-actions button {
+      min-height: 44px;
+      justify-content: center;
+      font-size: 13px;
+    }
+
+    .modal-footer {
+      display: flex;
+      gap: 10px;
+      padding: 16px 22px 18px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(11, 15, 25, 0.4);
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .modal-footer button {
+      min-height: 42px;
+      padding: 8px 18px;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid transparent;
+      color: #94a3b8;
+      box-shadow: none;
+    }
+
+    .btn-ghost:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.06);
+      color: #f8fafc;
+      border-color: rgba(255, 255, 255, 0.12);
+      box-shadow: none;
+    }
+
+    /* Recommendation Badge and Lock Toggle */
+    .media-type-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+    }
+
+    .rec-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 99px;
+      background: rgba(139, 92, 246, 0.16);
+      border: 1px solid rgba(139, 92, 246, 0.45);
+      color: #c4b5fd;
+      box-shadow: 0 0 12px rgba(139, 92, 246, 0.22);
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s ease;
+    }
+
+    .rec-badge:hover {
+      background: rgba(139, 92, 246, 0.25);
+      border-color: var(--accent);
+      color: #ffffff;
+      box-shadow: 0 0 16px rgba(139, 92, 246, 0.35);
+    }
+
+    .rec-badge .rec-reason {
+      opacity: 0.85;
+      font-size: 10px;
+      font-weight: 400;
+    }
+
+    .media-type-select-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .media-type-select-wrap select {
+      margin-bottom: 0;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .lock-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      color: var(--muted);
+      width: 42px;
+      height: 42px;
+      min-width: 42px;
+      min-height: 42px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      font-size: 16px;
+      box-shadow: none;
+      transition: all 0.2s ease;
+    }
+
+    .lock-btn:hover {
+      border-color: var(--accent);
+      color: #ffffff;
+      box-shadow: 0 0 12px rgba(139, 92, 246, 0.25);
+      filter: brightness(1.08);
+    }
+
+    .lock-btn.locked {
+      background: rgba(245, 158, 11, 0.15);
+      border-color: rgba(245, 158, 11, 0.5);
+      color: #fbbf24;
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.2);
+    }
+
+    /* ==========================================================================
+       RESPONSIVE & MOBILE OPTIMIZATIONS (360px - 768px - 1024px)
+       ========================================================================== */
     @media (max-width: 1024px) {
-      .header-inner { flex-direction: column; align-items: stretch; gap: 12px; }
-      .header-nav { overflow-x: auto; padding-bottom: 6px; }
-      .header-widgets { justify-content: space-between; }
-      .grid-2 { grid-template-columns: 1fr; }
-      .mux-layout { grid-template-columns: 1fr; }
-      .footer-inner { flex-direction: column; align-items: flex-start; gap: 10px; }
+      .header-inner {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+      }
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+      .mux-layout {
+        grid-template-columns: 1fr;
+      }
+      .footer-inner {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .app-header {
+        padding: 8px 12px;
+      }
+      .header-inner {
+        padding: 4px 0;
+        gap: 10px;
+      }
+      .brand-wrap {
+        width: 100%;
+        justify-content: flex-start;
+      }
+      .brand-title {
+        font-size: 15px;
+      }
+      .brand-tag {
+        font-size: 10px;
+      }
+      .header-nav {
+        display: flex;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        white-space: nowrap;
+        gap: 6px;
+        padding: 4px;
+        width: 100%;
+      }
+      .header-nav::-webkit-scrollbar {
+        display: none;
+      }
+      .nav-tab-btn {
+        flex-shrink: 0;
+        white-space: nowrap;
+        min-height: 42px;
+        padding: 8px 12px;
+        font-size: 12px;
+      }
+      .nav-tab-badge {
+        font-size: 10px;
+        padding: 2px 6px;
+        border-radius: 99px;
+      }
+      .header-widgets {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        width: 100%;
+        padding-bottom: 2px;
+      }
+      .header-widgets::-webkit-scrollbar {
+        display: none;
+      }
+      .disk-widget {
+        flex-shrink: 0;
+        min-width: 120px;
+        padding: 5px 8px;
+      }
+      .app-main {
+        padding: 14px 10px;
+      }
+      .card {
+        padding: 16px 12px;
+        margin-bottom: 14px;
+      }
+      .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      .card-header > div:last-child {
+        width: 100%;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .card-header > div:last-child button {
+        flex: 1;
+        min-height: 42px;
+      }
+      .track-row-item {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 10px 12px;
+      }
+      .track-drag-handle {
+        order: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .track-details {
+        order: 2;
+        flex: 1 1 calc(100% - 46px);
+        min-width: 0;
+      }
+      .track-controls-col {
+        order: 3;
+        width: 100%;
+        padding-top: 8px;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      .torrent-meta {
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .torrent-title {
+        word-break: break-word;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .row,
+      .row-3 {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      .add-action-buttons {
+        grid-template-columns: 1fr;
+      }
+      .posters-grid {
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+        gap: 8px;
+        padding: 2px;
+      }
+      .poster-card {
+        min-width: 0;
+      }
+      .poster-title {
+        font-size: 11px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .modal-footer {
+        flex-direction: column;
+      }
+      .modal-footer button {
+        width: 100%;
+      }
     }
   </style>
 </head>
@@ -1435,7 +1882,7 @@
         <div class="brand-info">
           <div class="brand-title">
             <span>Torrent Media Manager</span>
-            <span class="version-badge">v1.1.0</span>
+            <span class="version-badge">v1.1.1</span>
           </div>
           <span class="brand-tag">Plex &bull; Jellyfin &bull; qBittorrent &bull; mkvmerge</span>
         </div>
@@ -1562,13 +2009,21 @@
           <div style="margin-top: 14px;">
             <div class="row">
               <div>
-                <label for="mediaType">Категория медиа</label>
-                <select id="mediaType" onchange="onMediaTypeChange()">
-                  <option value="movie">🎬 Фильм (movie)</option>
-                  <option value="tv">📺 Сериал (tv)</option>
-                  <option value="anime">⛩️ Аниме (anime)</option>
-                  <option value="cartoon">🎨 Мультфильм (cartoon)</option>
-                </select>
+                <div class="media-type-header-row">
+                  <label for="mediaType" style="margin-bottom: 0;">Категория медиа</label>
+                  <span id="mediaTypeRecBadge" class="rec-badge" style="display: none;" onclick="applyMediaTypeRecommendation()"></span>
+                </div>
+                <div class="media-type-select-wrap">
+                  <select id="mediaType" onchange="onMediaTypeUserChange()">
+                    <option value="movie">🎬 Фильм (movie)</option>
+                    <option value="tv">📺 Сериал (tv)</option>
+                    <option value="anime">⛩️ Аниме (anime)</option>
+                    <option value="cartoon">🎨 Мультфильм (cartoon)</option>
+                  </select>
+                  <button type="button" id="btnMediaTypeLock" class="lock-btn" title="Автовыбор категории разблокирован (кликните, чтобы зафиксировать)" onclick="toggleMediaTypeLock()">
+                    <span id="mediaTypeLockIcon">🔓</span>
+                  </button>
+                </div>
               </div>
               <div>
                 <label for="manualQuery">Ручной поиск TMDB</label>
@@ -1876,7 +2331,7 @@
     <div class="footer-inner">
       <div class="footer-left">
         <strong>Torrent Media Manager</strong>
-        <span class="version-badge">v1.1.0</span>
+        <span class="version-badge">v1.1.1</span>
         <span>&bull;</span>
         <span>Podman Quadlet (Host mode) &bull; <span id="footerHostDisplay"></span></span>
       </div>
@@ -1906,7 +2361,7 @@
        APPLICATION STATE
        ========================================================================== */
     const State = {
-      version: "v1.1.0",
+      version: "v1.1.1",
       currentTab: "tab-add",
       addMode: "magnet", // 'magnet' | 'file'
       selectedTorrentFile: null,
@@ -1923,7 +2378,9 @@
       muxTrackDrafts: {}, // jobId -> { internalAudio, internalSubs, externalAudio, externalSubs }
       sseEventSource: null,
       filterJobsStatus: "all",
-      isMuxingActive: false
+      isMuxingActive: false,
+      mediaTypeLocked: false,
+      currentRecommendation: null
     };
 
     const $ = (id) => document.getElementById(id);
@@ -1957,6 +2414,205 @@
       warn(msg) { this.show(msg, "warn"); },
       info(msg) { this.show(msg, "info"); }
     };
+
+    /* ==========================================================================
+       MODAL DIALOG SYSTEM (GLASSMORPHISM)
+       ========================================================================== */
+    const Modal = {
+      confirm({
+        title = "Подтверждение",
+        message = "Вы уверены?",
+        confirmText = "Подтвердить",
+        cancelText = "Отмена",
+        danger = false
+      } = {}) {
+        return new Promise((resolve) => {
+          const old = document.getElementById("activeModalBackdrop");
+          if (old) old.remove();
+
+          const backdrop = document.createElement("div");
+          backdrop.id = "activeModalBackdrop";
+          backdrop.className = "modal-backdrop";
+
+          const confirmClass = danger ? "btn btn-danger" : "btn btn-primary";
+
+          backdrop.innerHTML = `
+            <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modalConfirmTitle">
+              <div class="modal-header">
+                <h3 class="modal-title" id="modalConfirmTitle">
+                  <span>${danger ? "⚠️" : "💬"}</span>
+                  <span>${escapeHtml(title)}</span>
+                </h3>
+                <button class="modal-close" type="button" aria-label="Закрыть" data-action="cancel">&times;</button>
+              </div>
+              <div class="modal-body">
+                <div class="modal-message">${escapeHtml(message)}</div>
+              </div>
+              <div class="modal-footer">
+                <button class="btn btn-ghost" type="button" data-action="cancel">${escapeHtml(cancelText)}</button>
+                <button class="${confirmClass}" type="button" data-action="confirm">${escapeHtml(confirmText)}</button>
+              </div>
+            </div>
+          `;
+
+          function finish(res) {
+            document.removeEventListener("keydown", onKey);
+            backdrop.classList.remove("show");
+            setTimeout(() => {
+              backdrop.remove();
+              resolve(res);
+            }, 200);
+          }
+
+          function onKey(e) {
+            if (e.key === "Escape") {
+              e.preventDefault();
+              finish(false);
+            }
+          }
+
+          backdrop.addEventListener("click", (e) => {
+            const btn = e.target.closest("[data-action]");
+            if (btn) {
+              const act = btn.getAttribute("data-action");
+              finish(act === "confirm");
+              return;
+            }
+            if (e.target === backdrop) {
+              finish(false);
+            }
+          });
+
+          document.addEventListener("keydown", onKey);
+          document.body.appendChild(backdrop);
+          requestAnimationFrame(() => {
+            backdrop.classList.add("show");
+            const autoFocusBtn = backdrop.querySelector(danger ? '[data-action="cancel"]' : '[data-action="confirm"]');
+            if (autoFocusBtn) autoFocusBtn.focus();
+          });
+        });
+      },
+
+      deleteTorrent({ name = "", hash = "" } = {}) {
+        return new Promise((resolve) => {
+          const old = document.getElementById("activeModalBackdrop");
+          if (old) old.remove();
+
+          const backdrop = document.createElement("div");
+          backdrop.id = "activeModalBackdrop";
+          backdrop.className = "modal-backdrop";
+
+          backdrop.innerHTML = `
+            <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modalDeleteTitle">
+              <div class="modal-header">
+                <h3 class="modal-title" id="modalDeleteTitle" style="color: #fca5a5;">
+                  <span>🗑️</span>
+                  <span>Удаление раздачи</span>
+                </h3>
+                <button class="modal-close" type="button" aria-label="Закрыть" data-action="cancel">&times;</button>
+              </div>
+              <div class="modal-body">
+                <div class="modal-torrent-box">
+                  <div class="modal-torrent-title">${escapeHtml(name || "Раздача")}</div>
+                  ${hash ? `<div class="modal-torrent-hash">Hash: <code>${escapeHtml(hash)}</code></div>` : ""}
+                </div>
+                <div class="modal-question">Выберите способ удаления раздачи:</div>
+                <div class="modal-delete-actions">
+                  <button class="btn btn-danger btn-block" type="button" data-action="both">
+                    🗑️ Удалить вместе с файлами
+                  </button>
+                  <button class="btn btn-secondary btn-block" type="button" data-action="torrent_only">
+                    📦 Только из клиента (файлы оставить)
+                  </button>
+                  <button class="btn btn-ghost btn-block" type="button" data-action="cancel">
+                    Отмена
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+
+          function finish(act) {
+            document.removeEventListener("keydown", onKey);
+            backdrop.classList.remove("show");
+            setTimeout(() => {
+              backdrop.remove();
+              resolve(act);
+            }, 200);
+          }
+
+          function onKey(e) {
+            if (e.key === "Escape") {
+              e.preventDefault();
+              finish("cancel");
+            }
+          }
+
+          backdrop.addEventListener("click", (e) => {
+            const btn = e.target.closest("[data-action]");
+            if (btn) {
+              const act = btn.getAttribute("data-action");
+              finish(act || "cancel");
+              return;
+            }
+            if (e.target === backdrop) {
+              finish("cancel");
+            }
+          });
+
+          document.addEventListener("keydown", onKey);
+          document.body.appendChild(backdrop);
+          requestAnimationFrame(() => {
+            backdrop.classList.add("show");
+            const cancelBtn = backdrop.querySelector('[data-action="cancel"]');
+            if (cancelBtn) cancelBtn.focus();
+          });
+        });
+      }
+    };
+    window.Modal = Modal;
+
+    /* ==========================================================================
+       MEDIA TYPE RECOMMENDATION & LOCK SYSTEM
+       ========================================================================== */
+    function toggleMediaTypeLock() {
+      State.mediaTypeLocked = !State.mediaTypeLocked;
+      updateMediaTypeLockUi();
+      Toast.info(State.mediaTypeLocked ? "Категория зафиксирована (автовыбор отключен)" : "Автовыбор категории включен");
+    }
+
+    function updateMediaTypeLockUi() {
+      const btn = $("btnMediaTypeLock");
+      const icon = $("mediaTypeLockIcon");
+      if (!btn || !icon) return;
+      if (State.mediaTypeLocked) {
+        btn.classList.add("locked");
+        btn.title = "Категория зафиксирована пользователем (кликните, чтобы включить автовыбор)";
+        icon.textContent = "🔒";
+      } else {
+        btn.classList.remove("locked");
+        btn.title = "Автовыбор категории активен (кликните, чтобы зафиксировать выбор)";
+        icon.textContent = "🔓";
+      }
+    }
+
+    function onMediaTypeUserChange() {
+      State.mediaTypeLocked = true;
+      updateMediaTypeLockUi();
+      onMediaTypeChange();
+    }
+
+    function applyMediaTypeRecommendation() {
+      if (!State.currentRecommendation) return;
+      const targetVal = State.currentRecommendation.value;
+      if (targetVal) {
+        $("mediaType").value = targetVal;
+        State.mediaTypeLocked = false;
+        updateMediaTypeLockUi();
+        onMediaTypeChange();
+        Toast.success(`Установлена категория: ${State.currentRecommendation.label}`);
+      }
+    }
 
     /* ==========================================================================
        API REQUEST WRAPPER
@@ -2135,6 +2791,14 @@
         </div>`;
       $("tmdbCountBadge").textContent = "0 результатов";
       State.selectedTmdbItem = null;
+      State.mediaTypeLocked = false;
+      State.currentRecommendation = null;
+      updateMediaTypeLockUi();
+      const badge = $("mediaTypeRecBadge");
+      if (badge) {
+        badge.style.display = "none";
+        badge.textContent = "";
+      }
       Toast.info("Форма сброшена");
     }
 
@@ -2180,6 +2844,43 @@
 
           if (data.info_hash && mode === "file") {
             $("selectedTorrentHashBadge").textContent = `Hash: ${data.info_hash.slice(0, 8)}...`;
+          }
+
+          // Handle recommended media type & auto-select
+          const recRaw = data.recommended_media_type;
+          if (recRaw) {
+            const map = {
+              films: { value: "movie", label: "Фильм" },
+              movie: { value: "movie", label: "Фильм" },
+              serials: { value: "tv", label: "Сериал" },
+              tv: { value: "tv", label: "Сериал" },
+              anime: { value: "anime", label: "Аниме" },
+              mults: { value: "cartoon", label: "Мультфильм" },
+              cartoon: { value: "cartoon", label: "Мультфильм" }
+            };
+            const recInfo = map[String(recRaw).toLowerCase()];
+            if (recInfo) {
+              const reason = data.recommendation_reason || (
+                recInfo.value === "anime" ? "найдены теги релиза" :
+                recInfo.value === "tv" ? "определены сезоны/эпизоды" :
+                recInfo.value === "cartoon" ? "найдены теги анимации" :
+                "полнометражный релиз"
+              );
+              State.currentRecommendation = { ...recInfo, reason };
+
+              const badge = $("mediaTypeRecBadge");
+              if (badge) {
+                badge.innerHTML = `💡 Рекомендовано: ${recInfo.label} <span class="rec-reason">(${escapeHtml(reason)})</span>`;
+                badge.title = "Нажмите, чтобы применить рекомендацию";
+                badge.style.display = "inline-flex";
+              }
+
+              // Automatically select in dropdown if user hasn't explicitly locked it
+              if (!State.mediaTypeLocked) {
+                $("mediaType").value = recInfo.value;
+                onMediaTypeChange();
+              }
+            }
           }
 
           const fallbackTitle = data.cleaned_query || data.raw_name || "";
@@ -2531,12 +3232,26 @@
       fetchJobs();
     }
 
+    async function deleteJob(jobId) {
+      return handleDeleteJob(jobId);
+    }
+    window.deleteJob = deleteJob;
+
     async function handleDeleteJob(jobId) {
-      if (!confirm("Удалить задачу автоимпорта?")) return;
+      const ok = await Modal.confirm({
+        title: "Удаление задачи импорта",
+        message: "Вы действительно хотите удалить задачу автоимпорта?",
+        confirmText: "Удалить задачу",
+        cancelText: "Отмена",
+        danger: true,
+      });
+      if (!ok) return;
+
       await apiRequest(`/api/jobs/${jobId}`, { method: "DELETE" });
       Toast.success("Задача удалена");
       fetchJobs();
     }
+    window.handleDeleteJob = handleDeleteJob;
 
     /* ==========================================================================
        TAB 3: MUX STUDIO (INTERACTIVE TRACKS, SUBTITLES & REORDERING)
@@ -2959,30 +3674,55 @@
       fetchJobs();
     }
 
-    async function handleSkipMux() {
-      const jobId = State.activeMuxJobId;
+    async function skipMuxing(jobId) {
       if (!jobId) return;
-      if (!confirm("Оставить исходные файлы без склейки дорожек и перенести в библиотеку?")) return;
+      const ok = await Modal.confirm({
+        title: "Пропуск склейки дорожек",
+        message: "Оставить исходные файлы без склейки дорожек и перенести в библиотеку?",
+        confirmText: "Импортировать без склейки",
+        cancelText: "Отмена",
+        danger: false,
+      });
+      if (!ok) return;
 
       await apiRequest(`/api/jobs/${jobId}/skip-mux`, { method: "POST" });
       Toast.success("Релиз импортирован без склейки");
       fetchJobs();
       switchTab("tab-jobs");
     }
+    window.skipMuxing = skipMuxing;
+
+    async function handleSkipMux() {
+      const jobId = State.activeMuxJobId;
+      if (!jobId) return;
+      await skipMuxing(jobId);
+    }
+    window.handleSkipMux = handleSkipMux;
 
     async function handleConfirmMux() {
       const jobId = State.activeMuxJobId;
       if (!jobId) return;
-      confirmMuxImport(jobId);
+      await confirmMuxImport(jobId);
     }
+    window.handleConfirmMux = handleConfirmMux;
 
     async function confirmMuxImport(jobId) {
-      if (!confirm("Импортировать результат склейки в библиотеку?")) return;
+      if (!jobId) return;
+      const ok = await Modal.confirm({
+        title: "Подтверждение импорта",
+        message: "Импортировать результат склейки в библиотеку?",
+        confirmText: "Импортировать в медиатеку",
+        cancelText: "Отмена",
+        danger: false,
+      });
+      if (!ok) return;
+
       await apiRequest(`/api/jobs/${jobId}/confirm-mux`, { method: "POST" });
       Toast.success("Релиз перенесен в медиатеку!");
       fetchJobs();
       switchTab("tab-jobs");
     }
+    window.confirmMuxImport = confirmMuxImport;
 
     /* ==========================================================================
        TORRENTS MANAGEMENT (TAB 4)
@@ -3043,16 +3783,24 @@
       renderTorrents();
     }
 
-    async function handleDeleteTorrent() {
-      if (!State.selectedTorrentHash) return;
-      const deleteFiles = confirm("Удалить также скачанные файлы с диска?\n[OK] — Да, удалить с диска\n[Отмена] — Только из торрент-клиента");
-      if (!confirm("Подтвердите удаление раздачи")) return;
+    async function handleDeleteTorrent(targetHash) {
+      const hash = targetHash || State.selectedTorrentHash;
+      if (!hash) return;
+      const torrent = State.torrents.find(t => t.hash === hash);
+      const name = torrent ? (torrent.name || hash) : hash;
 
-      await apiRequest(`/api/torrents/${State.selectedTorrentHash}?delete_files=${deleteFiles}`, { method: "DELETE" });
-      Toast.success("Раздача удалена");
-      State.selectedTorrentHash = null;
+      const choice = await Modal.deleteTorrent({ name, hash });
+      if (choice === "cancel") return;
+
+      const deleteFiles = (choice === "both");
+      await apiRequest(`/api/torrents/${hash}?delete_files=${deleteFiles}`, { method: "DELETE" });
+      Toast.success(deleteFiles ? "Раздача и скачанные файлы удалены" : "Раздача удалена из клиента");
+      if (State.selectedTorrentHash === hash) {
+        State.selectedTorrentHash = null;
+      }
       fetchTorrents();
     }
+    window.handleDeleteTorrent = handleDeleteTorrent;
 
     /* ==========================================================================
        IMPORT HISTORY (TAB 5)

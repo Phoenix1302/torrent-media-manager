@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Torrent Media Manager v1.1.0 — Automated Deployment Script
+# Torrent Media Manager v1.1.1 — Automated Deployment Script
 # Target OS: Red Hat Enterprise Linux 10 (RHEL 10) / AlmaLinux 10 / Rocky Linux 10
 # Container Engine: Podman Quadlet (Systemd Service, Network=Host)
 # SELinux: Disabled
@@ -9,9 +9,9 @@
 set -euo pipefail
 
 APP_NAME="torrent-media-manager"
-APP_VERSION="1.1.0"
-IMAGE_TAG="localhost/torrent-media-manager_torrent-media-manager:v1.1.0"
-IMAGE_ALIAS="localhost/torrent-media-manager:v1.1.0"
+APP_VERSION="1.1.1"
+IMAGE_TAG="localhost/torrent-media-manager_torrent-media-manager:v1.1.1"
+IMAGE_ALIAS="localhost/torrent-media-manager:v1.1.1"
 OPT_DIR="/opt/torrent-media-manager"
 ORIG_DIR=""
 

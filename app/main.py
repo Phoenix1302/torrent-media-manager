@@ -43,6 +43,11 @@ from space_manager import (
     has_space_for_download,
 )
 from tmdb import search_tmdb
+from title_cleaner import (
+    clean_release_title,
+    extract_title_candidates,
+    recommend_media_type,
+)
 from torrent_parser import parse_torrent_bytes
 from watcher import start_watcher
 
@@ -58,8 +63,8 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="Torrent Media Manager", version="1.1.0", lifespan=lifespan)
-# FastAPI(title="Torrent Media Manager", version="1.1.0")
+app = FastAPI(title="Torrent Media Manager", version="1.1.1", lifespan=lifespan)
+# FastAPI(title="Torrent Media Manager", version="1.1.1")
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -95,48 +100,6 @@ def extract_name_from_magnet(magnet: str) -> str:
     return magnet.strip()
 
 
-def clean_release_title(raw_name: str) -> str:
-    value = raw_name.strip()
-    value = " ".join(value.split())
-
-    parts = [p.strip() for p in value.split("/") if p.strip()]
-    if parts:
-        value = parts[0]
-
-    value = re.sub(r"^\[[^\]]+\]\s*", "", value).strip()
-    value = value.split("[", 1)[0].strip()
-
-    value = value.replace(".", " ").replace("_", " ")
-
-    release_tokens = {
-        "2160p", "1080p", "720p", "480p",
-        "web-dl", "webdl", "webrip", "bluray", "blu-ray", "bdrip", "brrip",
-        "hdrip", "dvdrip", "hdtv", "uhd", "remux",
-        "x264", "x265", "h264", "h265", "hevc", "avc",
-        "aac", "ac3", "dts", "ddp", "dd", "hdr", "dv", "dolby",
-        "lostfilm", "newstudio", "alexfilm", "jaskier", "kubik",
-        "mvo", "dvo", "dub", "sub",
-    }
-
-    words = value.split()
-    cleaned_words = []
-
-    for word in words:
-        low = word.lower().strip("[](){}.,;:_-")
-
-        if low in release_tokens:
-            break
-
-        if re.fullmatch(r"(19|20)\d{2}", low):
-            break
-
-        cleaned_words.append(word)
-
-    value = " ".join(cleaned_words).strip()
-    value = re.sub(r"\s*,.*", "", value).strip()
-    value = re.sub(r"\s*\((19|20)\d{2}\).*", "", value).strip()
-
-    return value or raw_name.strip()
 
 
 def parse_season_episode(raw_name: str) -> dict:
@@ -262,6 +225,14 @@ def get_tmdb_query(raw_name: str, manual_query: str = "") -> str:
 
 
 def normalize_media_type(media_type: str) -> str:
+    category_to_type = {
+        "films": "movie",
+        "serials": "tv",
+        "anime": "anime",
+        "mults": "cartoon",
+    }
+    if media_type in category_to_type:
+        return category_to_type[media_type]
     allowed = {"movie", "tv", "anime", "cartoon"}
     return media_type if media_type in allowed else "movie"
 
@@ -422,7 +393,7 @@ def health():
     return {
         "status": "ok",
         "app": "torrent-media-manager",
-        "version": "1.1.0",
+        "version": "1.1.1",
     }
 
 
@@ -504,10 +475,15 @@ async def analyze(
     except Exception:
         parsed = {}
 
+    candidates = extract_title_candidates(raw_name)
+    rec = recommend_media_type(raw_name, candidates)
+    recommended_media_type = rec.category
+    rec_reason = rec.reason
+
     try:
         query = get_tmdb_query(raw_name, manual_query)
     except Exception:
-        query = manual_query or raw_name or ""
+        query = manual_query or (candidates.primary if candidates else raw_name) or ""
 
     try:
         season_info = parse_season_episode(raw_name) if raw_name else {}
@@ -523,7 +499,11 @@ async def analyze(
     tmdb_warning = ""
 
     try:
-        results = await search_tmdb(str(query), tmdb_type)
+        try:
+            results = await search_tmdb(str(query), tmdb_type, candidates=candidates)
+        except TypeError:
+            results = await search_tmdb(str(query), tmdb_type)
+
         if not results:
             from config import TMDB_API_KEY
             if not TMDB_API_KEY:
@@ -545,6 +525,9 @@ async def analyze(
         "results": results,
         "info_hash": info_hash,
         "tmdb_warning": tmdb_warning,
+        "recommended_media_type": recommended_media_type,
+        "recommendation_reason": rec_reason,
+        "title_candidates": candidates,
     }
 
 

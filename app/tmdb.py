@@ -1,14 +1,19 @@
 import httpx
 
-from config import TMDB_API_KEY
+import config
+
+# Fallback reference
+TMDB_API_KEY = getattr(config, "TMDB_API_KEY", "")
 
 
 TMDB_BASE = "https://api.themoviedb.org/3"
 TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w342"
 
 
-async def search_tmdb(query: str, media_type: str) -> list[dict]:
-    if not TMDB_API_KEY:
+async def _execute_single_tmdb_search(query: str, media_type: str) -> list[dict]:
+    """Executes a single TMDB search request for one query string."""
+    api_key = getattr(config, "TMDB_API_KEY", "") or TMDB_API_KEY
+    if not api_key:
         return []
 
     clean_query = str(query).strip() if query else ""
@@ -21,7 +26,7 @@ async def search_tmdb(query: str, media_type: str) -> list[dict]:
         endpoint = "/search/tv"
 
     params = {
-        "api_key": TMDB_API_KEY,
+        "api_key": api_key,
         "query": clean_query,
         "language": "ru-RU",
         "include_adult": "false",
@@ -62,3 +67,45 @@ async def search_tmdb(query: str, media_type: str) -> list[dict]:
         )
 
     return results
+
+
+async def search_tmdb(
+    query: str | list[str],
+    media_type: str,
+    candidates: list[str] | None = None,
+) -> list[dict]:
+    """Searches TMDB with multi-candidate search fallback.
+
+    If searching primary cleaned title yields 0 results, tries secondary candidate
+    (e.g. English title) before giving up.
+    """
+    if not (getattr(config, "TMDB_API_KEY", "") or TMDB_API_KEY):
+        return []
+
+    queries_to_try: list[str] = []
+
+    if isinstance(query, (list, tuple)):
+        for q in query:
+            clean_q = str(q).strip()
+            if clean_q and clean_q not in queries_to_try:
+                queries_to_try.append(clean_q)
+    elif query:
+        clean_q = str(query).strip()
+        if clean_q and clean_q not in queries_to_try:
+            queries_to_try.append(clean_q)
+
+    if candidates:
+        for c in candidates:
+            clean_c = str(c).strip()
+            if clean_c and clean_c not in queries_to_try:
+                queries_to_try.append(clean_c)
+
+    if not queries_to_try:
+        return []
+
+    for q in queries_to_try:
+        results = await _execute_single_tmdb_search(q, media_type)
+        if results:
+            return results
+
+    return []
